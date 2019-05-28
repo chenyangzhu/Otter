@@ -56,28 +56,17 @@ class Dense(Layer):
     def calculate_self_gradient(self):
         # Calculate Self Gradients
         self.grad_w = np.matmul(self.input_tensor.T, self.activation.gradient)
+        assert self.grad_w.shape == self.w.shape
         self.grad_b = self.activation.gradient
+        assert self.grad_b.shape == self.b.shape
+
+        self.grad_x = np.matmul(self.w, self.activation.gradient.T).T
+        assert self.grad_x.shape == self.input_tensor.shape
+
 
         # Model gradients ready for back-prop
-        self.model_gradient = self.self_gradient['w']
+        self.model_gradient = self.grad_x
         # model gradient 就是我要往后传播的东西
-
-    # @property
-    # def self_gradient(self):
-    #     '''
-    #     这个gradient只是自己的 gradient，不是 model 里的。
-    #     :return:
-    #     '''
-    #     return
-
-    # @property
-    # def model_gradient(self):
-    #     '''
-    #     model gradient 就是本层需要向下一层传播的gradient，
-    #     这里完全不需要b， 只需要w
-    #     :return:
-    #     '''
-    #     return self._grad
 
     def update_model_gradient(self, grad):
         '''
@@ -88,7 +77,7 @@ class Dense(Layer):
         # print("Update Model Gradient")
         # print(self.model_gradient.shape)
         # print(grad.shape)
-        self.model_gradient = np.matmul(self.model_gradient, grad)
+        self.model_gradient = np.matmul(self.model_gradient.T, grad)
 
     @property
     def params(self):
