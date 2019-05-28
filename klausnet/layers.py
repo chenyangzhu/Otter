@@ -1,5 +1,12 @@
-import numpy as np
-from loss import *
+"""
+Layers
+- Dense
+- CNN
+- RNN
+"""
+
+
+from klausnet.loss import *
 
 class Layer():
     def __init__(self):
@@ -7,14 +14,6 @@ class Layer():
 
     def forward(self, input):
         pass
-
-    # @property
-    # def self_gradient(self):
-    #     return 0
-    #
-    # @property
-    # def model_gradient(self):
-    #     return 0
 
     @property
     def params(self):
@@ -60,9 +59,8 @@ class Dense(Layer):
         self.grad_b = self.activation.gradient
         assert self.grad_b.shape == self.b.shape
 
-        self.grad_x = np.matmul(self.w, self.activation.gradient.T).T
+        self.grad_x = np.matmul(self.activation.gradient, self.w.T)
         assert self.grad_x.shape == self.input_tensor.shape
-
 
         # Model gradients ready for back-prop
         self.model_gradient = self.grad_x
@@ -70,13 +68,9 @@ class Dense(Layer):
 
     def update_model_gradient(self, grad):
         '''
-
         :param grad: 链式法则传过来的上一层的gradient
         :return:
         '''
-        # print("Update Model Gradient")
-        # print(self.model_gradient.shape)
-        # print(grad.shape)
         self.model_gradient = np.matmul(self.model_gradient.T, grad)
 
     @property
