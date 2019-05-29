@@ -1,4 +1,5 @@
 from klausnet.history import history_recorder
+import matplotlib.pyplot as plt
 
 class Sequential:
     def __init__(self, layers):
@@ -6,12 +7,12 @@ class Sequential:
 
     def compile(self, optimizer, loss, iteration):
         '''
-
         :param optimizer: Optimizer 类
         :param loss: Loss 类
         :param iteration:  # of iterations
         :return:
         '''
+
         self.optimizer = optimizer
         self.loss = loss
         self.iteration = iteration
@@ -38,10 +39,11 @@ class Sequential:
                 X = each_layer.forward(X)
 
             # 运行最后的loss
+            print(X.shape)
             self.loss.forward(y=self.y, yhat=X)
 
             # Back-prop
-            grad = self.loss.gradient # Grad 是全局back-prop的 gradient
+            grad = self.loss.gradient  # Grad 是全局back-prop的 gradient
             print("Size of Gradient from Loss", grad.shape)
             for each_layer in reversed(self.layers):
                 # print("Gradient Shape", grad.shape)
