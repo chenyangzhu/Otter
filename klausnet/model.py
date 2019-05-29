@@ -1,4 +1,3 @@
-import numpy as np
 from klausnet.history import history_recorder
 
 class Sequential:
@@ -29,6 +28,9 @@ class Sequential:
 
         for i in range(self.iteration):
 
+            if i % 10 == 0:
+                print("The", i, "th iteration.")
+
             X = self.X
 
             # 运行中间的layer
@@ -39,18 +41,17 @@ class Sequential:
             self.loss.forward(y=self.y, yhat=X)
 
             # Back-prop
-            grad = self.loss.gradient  # Grad 是全局往前的 gradient
-            # print(grad.shape)
+            grad = self.loss.gradient # Grad 是全局back-prop的 gradient
+            print("Size of Gradient from Loss", grad.shape)
             for each_layer in reversed(self.layers):
-                each_layer.update_model_gradient(grad)
+                # print("Gradient Shape", grad.shape)
+                each_layer.update_gradient(grad)
                 # print(grad.shape)
-                grad = np.matmul(grad, each_layer.model_gradient.T)
-
+                grad = each_layer.model_gradient
 
             # Update Weights
             for each_layer in self.layers:
                 self.optimizer.update_once(each_layer)
-
 
             hist_loss.append(self.loss.loss)
             # print(self.loss.loss)

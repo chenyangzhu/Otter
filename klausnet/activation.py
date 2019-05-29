@@ -24,14 +24,20 @@ class Sigmoid(Activation):
         super().__init__()
 
     def forward(self, X):
-        # self.X = X
-        self.S = 1 / (1 + np.exp(-X))
-        return self.S
+        S = 1 / (1 + np.exp(-X))
+
+        # 虽然S有normalize的作用，但是进来的X
+        # 不知道为什么会变得非常非常大
+        # 个人认为原因应该是由于跟新weight的时候
+        # 导致这些数变得特别特别大
+
+        # Calculate Gradients
+        self.__gradient = np.multiply(S, (1 - S))
+        return S
 
     @property
     def gradient(self):
-        return np.multiply(self.S, (1 - self.S))
-
+        return self.__gradient
 
 # TODO Write Gradients
 class Softmax(Activation):
@@ -50,10 +56,14 @@ class Softmax(Activation):
         # Backward
         # print(exp_matrix.shape)
         # print(exp_matrix_sum.shape)
-        self.gradient = (exp_matrix * exp_matrix_sum - exp_matrix ** 2) / (exp_matrix_sum ** 2)
+        self.__gradient = (exp_matrix * exp_matrix_sum - exp_matrix ** 2) / (exp_matrix_sum ** 2)
         output = exp_matrix / exp_matrix_sum
-        print(output.shape)
+        # print(output.shape)
         return output
+
+    @property
+    def gradient(self):
+        return self.__gradient
 
 
 class Tanh(Activation):
@@ -74,12 +84,12 @@ class Linear(Activation):
         super().__init__()
 
     def forward(self, X):
-        self.X = X
+        self.__gradient = np.ones(X.shape)
         return X
 
     @property
     def gradient(self):
-        return np.ones(self.X.shape)
+        return self.__gradient
 
 
 class Relu(Activation):
@@ -87,12 +97,13 @@ class Relu(Activation):
         super().__init__()
 
     def forward(self, X):
-        self.X = X
-        return np.multiply((X >= 0).astype(int), X)
+        self.__gradient = (X >= 0).astype(int)
+        output = np.multiply((X >= 0).astype(int), X)
+        return output
 
     @property
     def gradient(self):
-        return (self.X >= 0).astype(int)
+        return self.__gradient
 
 
 # class LeakyRelu(Activation):

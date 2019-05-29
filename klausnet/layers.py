@@ -19,7 +19,7 @@ class Layer():
     def params(self):
         return 0
 
-    def update_model_gradient(self, grad):
+    def update_gradient(self, grad):
         pass
 
 
@@ -42,36 +42,32 @@ class Dense(Layer):
 
         self.activation = activation
 
-    def forward(self, input_tensor):
+    def forward(self, X):
         # Forward Propagation
-        self.input_tensor = input_tensor
-        output = np.matmul(self.input_tensor, self.w) + self.b
+        self.X = X
+        output = np.matmul(self.X, self.w) + self.b
         output = self.activation.forward(output)
-
-        self.calculate_self_gradient()
 
         return output
 
-    def calculate_self_gradient(self):
-        # Calculate Self Gradients
-        self.grad_w = np.matmul(self.input_tensor.T, self.activation.gradient)
-        assert self.grad_w.shape == self.w.shape
-        self.grad_b = self.activation.gradient
-        assert self.grad_b.shape == self.b.shape
-
-        self.grad_x = np.matmul(self.activation.gradient, self.w.T)
-        assert self.grad_x.shape == self.input_tensor.shape
-
-        # Model gradients ready for back-prop
-        self.model_gradient = self.grad_x
-        # model gradient 就是我要往后传播的东西
-
-    def update_model_gradient(self, grad):
+    def update_gradient(self, grad):
         '''
         :param grad: 链式法则传过来的上一层的gradient
         :return:
         '''
-        self.model_gradient = np.matmul(self.model_gradient.T, grad)
+
+        # print("Input gradient", grad.shape)
+        self.input_gradient_after_activation = np.multiply(grad, self.activation.gradient)
+        self.grad_w = np.matmul(self.X.T, self.input_gradient_after_activation)
+        self.grad_X = np.matmul(self.input_gradient_after_activation, self.w.T)
+        self.grad_b = self.input_gradient_after_activation
+
+        assert self.grad_w.shape == self.w.shape
+        assert self.grad_b.shape == self.b.shape
+        assert self.grad_X.shape == self.X.shape
+
+        self.__model_gradient = self.grad_X
+
 
     @property
     def params(self):
@@ -83,12 +79,16 @@ class Dense(Layer):
         return {"w": self.grad_w,
                 "b": self.grad_b}
 
+    @property
+    def model_gradient(self):
+        return self.__model_gradient
 
-class Input(Layer):
-    def __init__(self, input_shape):
-        super().__init__()
-        self.n, self.p = input_shape  # input_tensor shape
 
-    def forward(self, input_tensor):
-        self.input_tensor = input_tensor
-        return input_tensor
+# class Input(Layer):
+#     def __init__(self, input_shape):
+#         super().__init__()
+#         self.n, self.p = input_shape  # input_tensor shape
+#
+#     def forward(self, input_tensor):
+#         self.input_tensor = input_tensor
+#         return input_tensor
