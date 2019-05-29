@@ -3,8 +3,10 @@ Layers
 - Dense
 - CNN
 - RNN
-"""
 
+### 目前，Dense Layer是自带一个activation的！！！！！
+但我们也可以把activation 作为一个新的layer，直接放到model里。
+"""
 
 from klausnet.loss import *
 
@@ -12,16 +14,30 @@ class Layer():
     def __init__(self):
         pass
 
-    def forward(self, input):
+    def forward(self, X):
+        '''
+        如果可以的话，gradient尽量从forward中update
+        但遇到activation内置的情况，可以在update_gradient中嵌入。
+        :param X:
+        :return:
+        '''
+        pass
+
+    def update_gradient(self, grad):
+        '''
+        用来跟新gradient，（用于back prop的时候）
+        :param grad:
+        :return:
+        '''
         pass
 
     @property
     def params(self):
         return 0
 
-    def update_gradient(self, grad):
-        pass
-
+    @property
+    def gradient(self):
+        return 0
 
 class Dense(Layer):
     def __init__(self, hidden_unit, input_shape, activation):
@@ -68,20 +84,20 @@ class Dense(Layer):
 
         self.__model_gradient = self.grad_X
 
-
     @property
     def params(self):
         return {'w': self.w,
                 'b': self.b}
 
     @property
-    def self_gradient(self):
-        return {"w": self.grad_w,
-                "b": self.grad_b}
+    def gradient(self):
+        '''
 
-    @property
-    def model_gradient(self):
-        return self.__model_gradient
+        :return: X -- model gradient for backprop
+        '''
+        return {"w": self.grad_w,
+                "b": self.grad_b,
+                "X": self.grad_X}
 
 
 # class Input(Layer):
@@ -92,3 +108,27 @@ class Dense(Layer):
 #     def forward(self, input_tensor):
 #         self.input_tensor = input_tensor
 #         return input_tensor
+
+
+class Conv2D(Layer):
+    def __init__(self, filters, kernel_size, strides,
+                 padding, activation):
+        '''
+        :param filters:         kernel 的维度
+        :param kernel_size:     kernel 的大小
+        :param strides:         //
+        :param padding:         //
+        :param activation:      //
+        '''
+        super().__init__()
+
+        # Initialize the kernel
+        self.filters = filters
+        self.kernel_size = kernel_size
+        self.kernel = np.random.normal(0, 1, self.kernel_size)
+
+        self.strides = strides
+        self.padding = padding
+        self.activation = activation
+
+    def forward(self, X):

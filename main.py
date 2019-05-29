@@ -6,8 +6,6 @@ from klausnet.optimizer import GradientDescent
 from klausnet.activation import Sigmoid, Linear, Softmax, Relu
 from klausnet.nn import *
 from klausnet.model import Sequential
-import klausnet.history as hist
-
 
 np.random.seed(2019)
 

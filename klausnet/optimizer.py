@@ -12,5 +12,5 @@ class GradientDescent(Optimizer):
         self.learning_rate = learning_rate
 
     def update_once(self, layer):
-        layer.w = layer.w - self.learning_rate * layer.self_gradient['w']
-        layer.b = layer.b - self.learning_rate * layer.self_gradient['b']
+        layer.w = layer.w - self.learning_rate * layer.gradient['w']
+        layer.b = layer.b - self.learning_rate * layer.gradient['b']

@@ -47,7 +47,7 @@ class Sequential:
                 # print("Gradient Shape", grad.shape)
                 each_layer.update_gradient(grad)
                 # print(grad.shape)
-                grad = each_layer.model_gradient
+                grad = each_layer.gradient['X']
 
             # Update Weights
             for each_layer in self.layers:
@@ -63,3 +63,4 @@ class Sequential:
         for each_layer in self.layers:
             X = each_layer.forward(X)
         return X
+

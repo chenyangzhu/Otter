@@ -5,18 +5,25 @@ Activation Functions
 - Tanh
 - Linear
 - Relu
+
+注意了，所有的
+@property
+    def gradient(self):
+        return {'X': self.__gradient}
+
+return dict 的目的是Activation 要和 Layer 相统一
+本质上 Activation 应该是和Layer一样的东西。
 """
 
 
 import numpy as np
+from klausnet.layers import Layer
 
 
-class Activation:
+class Activation(Layer):
     def __init__(self):
+        super().__init__()
         pass
-
-    def forward(self, X):
-        return X
 
 
 class Sigmoid(Activation):
@@ -37,7 +44,7 @@ class Sigmoid(Activation):
 
     @property
     def gradient(self):
-        return self.__gradient
+        return {'X': self.__gradient}
 
 # TODO Write Gradients
 class Softmax(Activation):
@@ -53,17 +60,14 @@ class Softmax(Activation):
         exp_matrix = np.exp(X)
         exp_matrix_sum = np.sum(exp_matrix, axis=1).reshape(exp_matrix.shape[0],1)
 
-        # Backward
-        # print(exp_matrix.shape)
-        # print(exp_matrix_sum.shape)
+        # Back-prop
         self.__gradient = (exp_matrix * exp_matrix_sum - exp_matrix ** 2) / (exp_matrix_sum ** 2)
         output = exp_matrix / exp_matrix_sum
-        # print(output.shape)
         return output
 
     @property
     def gradient(self):
-        return self.__gradient
+        return {'X': self.__gradient}
 
 
 class Tanh(Activation):
@@ -89,7 +93,7 @@ class Linear(Activation):
 
     @property
     def gradient(self):
-        return self.__gradient
+        return {'X': self.__gradient}
 
 
 class Relu(Activation):
@@ -103,7 +107,7 @@ class Relu(Activation):
 
     @property
     def gradient(self):
-        return self.__gradient
+        return {'X': self.__gradient}
 
 
 # class LeakyRelu(Activation):
@@ -117,4 +121,3 @@ class Relu(Activation):
 #     @property
 #     def gradient(self):
 #         return (self.X >= 0).astype(int)
-
