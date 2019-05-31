@@ -44,7 +44,7 @@ class Sigmoid(Activation):
 
     @property
     def gradient(self):
-        return {'X': self.__gradient}
+        return {'x': self.__gradient}
 
 # TODO Write Gradients
 class Softmax(Activation):
@@ -67,7 +67,7 @@ class Softmax(Activation):
 
     @property
     def gradient(self):
-        return {'X': self.__gradient}
+        return {'x': self.__gradient}
 
 
 class Tanh(Activation):
@@ -93,7 +93,7 @@ class Linear(Activation):
 
     @property
     def gradient(self):
-        return {'X': self.__gradient}
+        return {'x': self.__gradient}
 
 
 class Relu(Activation):
@@ -107,7 +107,7 @@ class Relu(Activation):
 
     @property
     def gradient(self):
-        return {'X': self.__gradient}
+        return {'x': self.__gradient}
 
 
 # class LeakyRelu(Activation):

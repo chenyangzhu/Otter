@@ -5,7 +5,6 @@ class history_recorder:
     def record(self):
         pass
 
-
 class Metrics:
     def __init__(self):
         pass

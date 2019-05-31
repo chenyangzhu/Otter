@@ -1,8 +1,8 @@
-import klausnet.layers
+from klausnet.layers import base
 import numpy as np
 
 
-class Dense(klausnet.layers.Layer):
+class Dense(base.Layer):
     def __init__(self, hidden_unit, input_shape, activation, learnable=True):
 
         '''
@@ -18,7 +18,7 @@ class Dense(klausnet.layers.Layer):
         self.m = hidden_unit
 
         self.w = np.random.normal(0, 1, (self.p, self.m))
-        self.b = np.random.normal(0, 1, (self.n, self.m))
+        self.b = np.random.normal(0, 1, (self.m, 1))  # TODO change to (1, m)
 
         self.activation = activation
         self.learnable = learnable
@@ -26,28 +26,32 @@ class Dense(klausnet.layers.Layer):
     def forward(self, X):
         # Forward Propagation
         self.X = X
-        output = np.matmul(self.X, self.w) + self.b
+        output = np.matmul(self.X, self.w) + self.b.T
         output = self.activation.forward(output)
 
         return output
 
-    def update_gradient(self, grad):
+    def update_gradient(self, grad, method, minibatch=-1):
         '''
         :param grad: 链式法则传过来的上一层的gradient
         :return:
         '''
 
         # print("Input gradient", grad.shape)
-        self.input_gradient_after_activation = np.multiply(grad, self.activation.gradient)
+
+        self.input_gradient_after_activation = np.multiply(grad, self.activation.gradient['x'])
         self.grad_w = np.matmul(self.X.T, self.input_gradient_after_activation)
-        self.grad_X = np.matmul(self.input_gradient_after_activation, self.w.T)
-        self.grad_b = self.input_gradient_after_activation
+        self.grad_x = np.matmul(self.input_gradient_after_activation, self.w.T)
+        self.grad_b = self.average_gradient(self.input_gradient_after_activation,
+                                            method, minibatch)  # 只有b是需要average gradient
 
         assert self.grad_w.shape == self.w.shape
+        print(self.grad_b.shape)
+        print(self.b.shape)
         assert self.grad_b.shape == self.b.shape
-        assert self.grad_X.shape == self.X.shape
+        assert self.grad_x.shape == self.X.shape
 
-        self.__model_gradient = self.grad_X
+        self.__model_gradient = self.grad_x
 
     @property
     def params(self):
@@ -62,7 +66,8 @@ class Dense(klausnet.layers.Layer):
         '''
         return {"w": self.grad_w,
                 "b": self.grad_b,
-                "X": self.grad_X}
+                "x": self.grad_x,
+                "back": self.grad_x}
 
 
 # class Input(Layer):
@@ -73,4 +78,3 @@ class Dense(klausnet.layers.Layer):
 #     def forward(self, input_tensor):
 #         self.input_tensor = input_tensor
 #         return input_tensor
-

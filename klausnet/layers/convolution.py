@@ -1,10 +1,11 @@
-import klausnet.layers
+from klausnet.layers import base
 import numpy as np
 
 # CNN
-class Conv2D(klausnet.layers.Layer):
+class Conv2D(base.Layer):
     def __init__(self, input_shape, filters, kernel_size, strides,
                  padding, activation, learnable=True):
+
         '''
         :param input_shape:     [channel, row, col]
         :param filters:         kernel 的维度，记为 p，同时也是输出的维度
@@ -13,44 +14,35 @@ class Conv2D(klausnet.layers.Layer):
         :param padding:         "valid" means no padding;
                                 "causal" means;
                                 "same" means output has the same length as input
-                                ** TODO 先写valid 无padding，之后加上padding **
+                                TODO 先写valid 无padding，之后加上padding
         :param activation:      activation function
-        :param learnable:       learnable=True，则在gradient descent 的时候更新这层的param，如果False，则不更新
+        :param learnable:       learnable=True，则在 gradient descent 的时候更新这层的param
+                                如果False，则不更新
         '''
 
         super().__init__()
         self.c, self.x, self.y = input_shape
-        self.f = filters # TODO 问题，这个filter到底怎么理解，出来的是几维？？？
+        self.f = filters        # Filter 数就是新的channel数。
         self.u, self.v = kernel_size
         self.sx, self.sy = strides
-        self.px = self.py = 0 # TODO 有了padding后，改为padding
+        self.px = self.py = 0  # TODO 有了padding后，改为padding
         self.activation = activation
         self.learnable = learnable
 
         # Initialize the kernel
+        # 这个Layer的输出是一个 [n, c_new, x_new, y_new] 的matrix
 
-        ## 我们首先计算，CNN 后的新的图片大小
+        # 我们首先计算，CNN 后的新的图片大小
         self.x_new = int((self.x - self.f + 2 * self.px) / self.sx + 1)
         self.y_new = int((self.y - self.f + 2 * self.py) / self.sy + 1)
 
-        ## w 是直接乘到原来的矩阵上面的，它的大小由 kernel 决定
-        self.w = np.random.normal(0, 1, (self.f, self.u, self.v))
-        ## b 是加在已经取过 sum 了的上面，它的大小由CNN 后的大小决定
-        print(self.x_new)
-        print(self.y_new)
+        # w 是直接乘到原来的矩阵上面的，它的大小由 kernel 决定
+        # self.c 是为了和输入的矩阵的维度匹配
+        # self.f 就是我一共用了多少个filter，所以放在最外层。
+        self.w = np.random.normal(0, 1, (self.f, self.c, self.u, self.v))
+
+        # b 是加在已经取过 sum 了的上面，它的大小由 CNN 后的大小决定
         self.b = np.random.normal(0, 1, (self.f, self.x_new, self.y_new))
-
-
-    # 由于我们有batch，所以还需要添加一些大的matrix
-    def W(self, n):
-        '''
-        注意了，这个大的W 只是为了计算n batch的时候方便使用，
-        update的时候，我们只update 小的 self.w
-        TODO
-        :param n:
-        :return:
-        '''
-        return np.repeat(self.w, n)
 
     def forward(self, X):
         '''
@@ -61,56 +53,124 @@ class Conv2D(klausnet.layers.Layer):
 
         # Check 一下所有的维度是否正确
         size = X.shape
+        self.X = X
         self.n = size[0]
         assert self.c == size[1]
         assert self.x == size[2]
         assert self.y == size[3]
 
-        # 首先 生成新的那个矩阵，同样是 [batch, f, x_new, y_new] 4D
-        output = np.zeros((self.n, self.c, self.x_new, self.y_new))
+        # 首先 生成新的矩阵，同样是 [batch, f, x_new, y_new] 4D
+        output = np.zeros((self.n, self.f, self.x_new, self.y_new))
+
+        # mapping 的维度和输出的维度一致,最后一维是两个
+        self.x2w = dict()
+        self.w2x = dict()
+
+        # grad_x 的维度和进入矩阵的维度一致
+        self.grad_x = np.zeros(X.shape)         # [n, c, x, y]
+        self.grad_w = np.zeros(self.w.shape)    # [f, c, u, v]
+        self.grad_b = np.zeros(self.b.shape)    # [f, x_new, y_new]
 
         # TODO 如何同时做batch个？
+        record = True
         for image_idx, image in enumerate(X):
-            for i in range(self.x_new):
-                for j in range(self.y_new):
-                    x_start = int(i * self.sx)
-                    x_end = int(x_start + self.u)
-                    y_start = int(j * self.sy)
-                    y_end = int(y_start + self.v)
+            for filter_idx in range(self.f):
 
-                    # Computation
-                    clip = image[:, x_start: x_end, y_start: y_end]
-                    weighted_clip = np.multiply(clip, self.w)
-                    sum_of_weighted_clip = np.sum(weighted_clip)
-                    output_scalar = sum_of_weighted_clip + self.b[:, i, j]
+                for i in range(self.x_new):
+                    for j in range(self.y_new):
 
-                    output[image_idx, :, i, j] = output_scalar
+                        x_start = int(i * self.sx)
+                        x_end = int(x_start + self.u)
+                        y_start = int(j * self.sy)
+                        y_end = int(y_start + self.v)
 
-        print(output)
+                        if record:
+                            self.mapping = []
+                            for ix in range(self.u):
+                                for jx in range(self.v):
+                                    # self.mapping.append([[x_start+i, y_start+j],[0+ix, 0+jx]])
+                                    try:
+                                        self.w2x[(0+ix, 0+jx)].append((x_start+ix, y_start+jx))
+                                        self.x2w[(x_start+ix, y_start+jx)].append((0+ix, 0+jx))
+                                    except:
+                                        self.w2x[(0+ix, 0+jx)] = [(x_start+ix, y_start+jx)]
+                                        self.x2w[(x_start+ix, y_start+jx)] = [(0+ix, 0+jx)]
+
+                            # record是记录所有的mapping，只需要循环过一次后，其他都是一样的
+                        # end record
+
+                        # Computation
+                        clip = image[:, x_start: x_end, y_start: y_end]
+                        weighted_clip = np.multiply(clip, self.w[filter_idx])
+                        sum_of_weighted_clip = np.sum(weighted_clip)
+                        output_scalar = sum_of_weighted_clip + self.b[filter_idx, i, j]
+
+                        output[image_idx, filter_idx, i, j] = output_scalar
+
+                    # end for j
+                # end for i
+                record = False
+            # end for filter_idx
+        # end for image_idx
+
         return output
 
-    def update_gradient(self, grad):
+
+    def update_gradient(self, grad, method, minibatch=-1):
+        '''
+
+        :param grad: [n, f, x_new, y_new]
+        :return:
+        '''
         # TODO write CNN Gradients
-        self.grad_w = np.ones(self.w.shape)
-        self.grad_b = np.ones(self.b.shape)
-        self.grad_x = np.ones(self.x.shape)
-        pass
+
+        self.grad_w = np.ones(self.w.shape)  # f c u v
+
+        for filter_idx in self.f: # 对于每一个filter
+
+            for channel_idx in self.c: # 对于这个filter的每一层
+
+                for i in self.u:
+                    for j in self.v: # 对于这一层filter的每一个元素
+
+                        summation = 0
+                        for each_idx in self.w2x[(i,j)]:  # 我们去找w2x当中与他对应的这些坐标
+
+                            for image_idx in self.n:
+
+                                summation += self.X[image_idx, channel_idx][each_idx] * grad[image_idx, filter_idx, ]
+
+
+
+
+
+        self.grad_x = np.ones(self.x.shape)  # n c x y
+
+        self.grad_b = self.average_gradient(grad, method, minibatch)
+
+        assert self.grad_b.shape == self.b.shape
 
     @property
     def gradient(self):
         return {"w": self.grad_w,
                 "b": self.grad_b,
-                "x": self.grad_x}
+                "x": self.grad_x,
+                "back": self.grad_x}
 
     @property
     def params(self):
         return {"w": self.w,
                 "b": self.b}
 
-class MaxPooling2D(Layer):
+
+class MaxPooling2D(base.Layer):
     def __init__(self, input_shape, pool_size, strides, padding):
         '''
-        :param function: could be np.max, np.min, np.average, etc.
+
+        :param input_shape:
+        :param pool_size:
+        :param strides:
+        :param padding:
         '''
         super().__init__()
         self.c, self.x, self.y = input_shape    #
@@ -121,7 +181,7 @@ class MaxPooling2D(Layer):
         self.x_new = int((self.x - self.c + 2 * self.px) / self.sx + 1)
         self.y_new = int((self.y - self.c + 2 * self.py) / self.sy + 1)
 
-        # Pooling 本来就不需要learning和update
+        # Pooling 本来就不需要 learning 和 update
         self.learnable = False
 
     def forward(self, X):
@@ -140,6 +200,7 @@ class MaxPooling2D(Layer):
         # 当我们在做back prop的时候，就直接使用这个mapping，找到原来的位置，这样我们就可以直接把gradient 填充到原来的大矩阵里了
         # mapping的大小，是pool后的小矩阵的大小，不包括n。最后的2用来存储坐标。
         # gradient 的大小，是原来矩阵的大小。
+
         self.mapping = np.zeros((self.n, self.c, self.x_new, self.y_new, 2))
         self.grad_x = np.zeros((self.n, self.c, self.x, self.y))
 
@@ -167,7 +228,7 @@ class MaxPooling2D(Layer):
 
         return output
 
-    def update_gradient(self, grad):
+    def update_gradient(self, grad, method, minibatch=-1):
         '''
         上面传过来的 gradient 是小性状的 [n, channel, x_new, y_new]
         ，我们需要把小gradient 重新mapping回大的gradient！！！
@@ -181,7 +242,8 @@ class MaxPooling2D(Layer):
                     for j in range(self.y_new):
 
                         # TODO 下面这个还没跑 不一定对
-                        self.grad_x[image_idx, channel_idx][self.mapping[i, j]] = grad[image_idx, channel_idx, i, j]
+                        # Tuple 的目的是为了把 [] 变为 () 从而可以调用
+                        self.grad_x[image_idx, channel_idx][tuple(self.mapping[i, j])] = grad[image_idx, channel_idx, i, j]
     # end update gradient
 
     @property
@@ -190,6 +252,28 @@ class MaxPooling2D(Layer):
         Pooling Layer 只有一个往前的gradient，并不需要每次自己update。
         :return:
         '''
-        return {"x": self.grad_x}
+        return {"back": self.grad_x}
 
 
+class Flatten(base.Layer):
+    def __init__(self):
+        super().__init__()
+        # There's no need to specify the input shape
+        self.learnable = False
+
+    def forward(self, X):
+
+        self.n, self.c, self.x, self.y = X.shape
+        return X.reshape((self.n, self.c * self.x * self.y))
+
+    def update_gradient(self, grad, method='full', minibatch=-1):
+        '''
+        :param grad:        进来的gradient是一个 (n, c*x*y) 维度的向量
+        :param method:      这里的method必然是full
+        :return:            [n, c, x, y] 的 gradient 矩阵全部map回去
+        '''
+        self.grad_x = grad.reshape((self.n, self.c, self.x, self.y))
+
+    @property
+    def gradient(self):
+        return {'back': self.grad_x}
