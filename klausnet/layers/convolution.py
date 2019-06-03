@@ -53,7 +53,7 @@ class Conv2D(base.Layer):
 
         # Check 一下所有的维度是否正确
         size = X.shape
-        self.X = X
+        self.X = X                      # 大 X 是数据，小x是维度
         self.n = size[0]
         assert self.c == size[1]
         assert self.x == size[2]
@@ -65,6 +65,9 @@ class Conv2D(base.Layer):
         # mapping 的维度和输出的维度一致,最后一维是两个
         self.x2w = dict()
         self.w2x = dict()
+        self.mapping_new2old = np.zeros((self.n, self.f, self.x_new, self.y_new, 2))
+        self.mapping_old2new = np.zeros((self.n, self.f, self.x, self.y, 2))
+
 
         # grad_x 的维度和进入矩阵的维度一致
         self.grad_x = np.zeros(X.shape)         # [n, c, x, y]
@@ -85,10 +88,8 @@ class Conv2D(base.Layer):
                         y_end = int(y_start + self.v)
 
                         if record:
-                            self.mapping = []
                             for ix in range(self.u):
                                 for jx in range(self.v):
-                                    # self.mapping.append([[x_start+i, y_start+j],[0+ix, 0+jx]])
                                     try:
                                         self.w2x[(0+ix, 0+jx)].append((x_start+ix, y_start+jx))
                                         self.x2w[(x_start+ix, y_start+jx)].append((0+ix, 0+jx))
@@ -105,6 +106,17 @@ class Conv2D(base.Layer):
                         sum_of_weighted_clip = np.sum(weighted_clip)
                         output_scalar = sum_of_weighted_clip + self.b[filter_idx, i, j]
 
+                        # 记录Mapping
+                        maximum_x = int(np.argmax(clip)/clip.shape[0]) + x_start
+                        maximum_y = np.argmax(clip) % clip.shape[0] + y_start
+
+                        # 把最大值的位置的坐标记录在mapping里
+                        self.mapping_new2old[image_idx, filter_idx, i, j, 0] = maximum_x
+                        self.mapping_new2old[image_idx, filter_idx, i, j, 1] = maximum_y
+
+                        self.mapping_old2new[image_idx, filter_idx, maximum_x, maximum_y, 1] = i
+                        self.mapping_old2new[image_idx, filter_idx, maximum_x, maximum_y, 1] = j
+
                         output[image_idx, filter_idx, i, j] = output_scalar
 
                     # end for j
@@ -115,6 +127,69 @@ class Conv2D(base.Layer):
 
         return output
 
+    def update_gradient_w(self, grad):
+
+        self.grad_w = np.ones(self.w.shape)  # f c u v
+
+        for filter_idx in range(self.f):  # 对于每一个filter
+
+            for channel_idx in range(self.c):  # 对于这个filter的每一层
+
+                for i in range(self.u):
+                    for j in range(self.v):  # 对于这一层filter的每一个元素
+
+                        summation = 0
+                        for each_idx in self.w2x[(i, j)]:  # 我们去找w2x当中与他对应的这些坐标
+
+                            for image_idx in range(self.n):
+                                # self.X  [n, c, x, y]
+                                summation += self.X[image_idx, channel_idx][
+                                                 self.mapping_new2old[each_idx[0], each_idx[1]]] * \
+                                             grad[image_idx, filter_idx][each_idx]
+
+                            # End for each image
+
+                        self.grad_w[i, j] = summation / self.n  # 这里直接使用了average 的 gradient 处理方式
+
+                        # End for 某个 w[i, j] 所对应的x
+
+                # End for i,j 某一层(channel) filter 中的所有元素
+
+            # End for 这个filter的每一层channel
+
+        # End for 每一个filter
+
+    def update_gradient_x(self, grad):
+
+        self.grad_x = np.ones(self.X.shape)  # n c x y
+
+        for image_idx in (self.n):  # 不像之前做grad_w 现在每个grad对于不同的x是不同的
+
+            for channel_idx in range(self.c):  # 对于每一层channel
+
+                for i in range(self.x):
+                    for j in range(self.y):  # 对x中的每一个元素
+
+                        summation = 0
+
+                        for each_idx in self.x2w[(i, j)]:  # 去找到所有对应的w
+
+                            for filter_idx in range(self.f):
+                                # X 中每个元素的gradient 等于 sum of 对应的 w 乘上传来的grad
+                                # 因为是linear的，所以先求 avg grad 和后求是一样的。
+                                summation += self.w[channel_idx, filter_idx][each_idx] * grad[image_idx, filter_idx][self.mapping_old2new[i, j]]
+
+                            # End for each filter
+
+                        # End for each corresponding w
+
+                        self.grad_x[image_idx, channel_idx, i, j] = summation
+
+                # End for each element in one channel of x
+
+            # End for each channel
+
+        # End for each image
 
     def update_gradient(self, grad, method, minibatch=-1):
         '''
@@ -122,33 +197,12 @@ class Conv2D(base.Layer):
         :param grad: [n, f, x_new, y_new]
         :return:
         '''
+
         # TODO write CNN Gradients
 
-        self.grad_w = np.ones(self.w.shape)  # f c u v
-
-        for filter_idx in self.f: # 对于每一个filter
-
-            for channel_idx in self.c: # 对于这个filter的每一层
-
-                for i in self.u:
-                    for j in self.v: # 对于这一层filter的每一个元素
-
-                        summation = 0
-                        for each_idx in self.w2x[(i,j)]:  # 我们去找w2x当中与他对应的这些坐标
-
-                            for image_idx in self.n:
-
-                                summation += self.X[image_idx, channel_idx][each_idx] * grad[image_idx, filter_idx, ]
-
-
-
-
-
-        self.grad_x = np.ones(self.x.shape)  # n c x y
-
+        self.update_gradient_x(grad)
+        self.update_gradient_w(grad)
         self.grad_b = self.average_gradient(grad, method, minibatch)
-
-        assert self.grad_b.shape == self.b.shape
 
     @property
     def gradient(self):
