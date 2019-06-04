@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 
-from klausnet import layers
-from klausnet.loss import mean_squared_error, categorical_crossentropy
-from klausnet.optimizer import GradientDescent
-from klausnet.activation import Sigmoid, Linear, Softmax, Relu
-from klausnet.nn import *
-from klausnet.model import Sequential
+from otter import layers
+from otter.loss import mean_squared_error, categorical_crossentropy
+from otter.optimizer import GradientDescent
+from otter.activation import Sigmoid, Linear, Softmax, Relu
+from otter.math import *
+from otter.model import Sequential
 
 np.random.seed(2019)
 
