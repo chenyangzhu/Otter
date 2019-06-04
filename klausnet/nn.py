@@ -54,3 +54,5 @@ def minimum(A):
     return_dict = {"output": minimum,
                    "gradient": gradient}
     return return_dict
+
+

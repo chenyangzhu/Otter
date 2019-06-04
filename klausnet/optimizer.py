@@ -1,3 +1,9 @@
+"""
+Can further change how optimizers work.
+
+Further generalize the model into capability of coping with different w's and b's
+"""
+
 class Optimizer:
     def __init__(self):
         pass
@@ -11,6 +17,7 @@ class GradientDescent(Optimizer):
         super().__init__()
         self.learning_rate = learning_rate
 
-    def update_once(self, layer):
-        layer.w = layer.w - self.learning_rate * layer.gradient['w']
-        layer.b = layer.b - self.learning_rate * layer.gradient['b']
+    def update_once(self, each_layer):
+        each_layer.w = each_layer.w - self.learning_rate * each_layer.gradient['w']
+        each_layer.b = each_layer.b - self.learning_rate * each_layer.gradient['b']
+
