@@ -44,7 +44,7 @@ class Conv2D(base.Layer):
         # b 是加在已经取过 sum 了的上面，它的大小由 CNN 后的大小决定
         self.b = np.random.normal(0, 1, (self.f, self.x_new, self.y_new))
 
-    def forward(self, X):
+    def train_forward(self, X):
         '''
         :param X: X is a 4d tensor, [batch, channel, row, col]
         # TODO 之后完善有channel摆放位置不同的情况。
@@ -238,7 +238,7 @@ class MaxPooling2D(base.Layer):
         # Pooling 本来就不需要 learning 和 update
         self.learnable = False
 
-    def forward(self, X):
+    def train_forward(self, X):
 
         # Check 一下所有的维度是否正确
         size = X.shape
@@ -315,7 +315,7 @@ class Flatten(base.Layer):
         # There's no need to specify the input shape
         self.learnable = False
 
-    def forward(self, X):
+    def train_forward(self, X):
 
         self.n, self.c, self.x, self.y = X.shape
         return X.reshape((self.n, self.c * self.x * self.y))

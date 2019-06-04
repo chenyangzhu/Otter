@@ -21,7 +21,7 @@ class mean_squared_error(Loss):
     def forward(self, y, yhat):
         assert y.shape == yhat.shape
 
-        # Calculate forward prop
+        # Calculate train_forward prop
         self.output = np.sum((y - yhat) ** 2 / y.shape[0])
 
         # Calculate Gradients

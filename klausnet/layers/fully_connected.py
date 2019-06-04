@@ -23,13 +23,16 @@ class Dense(base.Layer):
         self.activation = activation
         self.learnable = learnable
 
-    def forward(self, X):
+    def train_forward(self, X):
         # Forward Propagation
         self.X = X
         output = np.matmul(self.X, self.w) + self.b.T
-        output = self.activation.forward(output)
+        output = self.activation.train_forward(output)
 
         return output
+
+    def pred_forward(self, X):
+        return self.train_forward(X)
 
     def update_gradient(self, grad, method, minibatch=-1):
         '''
@@ -46,8 +49,8 @@ class Dense(base.Layer):
                                             method, minibatch)  # 只有b是需要average gradient
 
         assert self.grad_w.shape == self.w.shape
-        print(self.grad_b.shape)
-        print(self.b.shape)
+        # print(self.grad_b.shape)
+        # print(self.b.shape)
         assert self.grad_b.shape == self.b.shape
         assert self.grad_x.shape == self.X.shape
 
@@ -75,6 +78,6 @@ class Dense(base.Layer):
 #         super().__init__()
 #         self.n, self.p = input_shape  # input_tensor shape
 #
-#     def forward(self, input_tensor):
+#     def train_forward(self, input_tensor):
 #         self.input_tensor = input_tensor
 #         return input_tensor

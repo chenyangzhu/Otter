@@ -30,7 +30,7 @@ class Sigmoid(Activation):
     def __init__(self):
         super().__init__()
 
-    def forward(self, X):
+    def train_forward(self, X):
         S = 1 / (1 + np.exp(-X))
 
         # 虽然S有normalize的作用，但是进来的X
@@ -51,7 +51,7 @@ class Softmax(Activation):
     def __init__(self):
         super().__init__()
 
-    def forward(self, X):
+    def train_forward(self, X):
         '''
         :param X: n x p matrix
         :return:  n x p matrix
@@ -74,7 +74,7 @@ class Tanh(Activation):
     def __init__(self):
         super().__init__()
 
-    def forward(self, X):
+    def train_forward(self, X):
         self.X = X
         return np.tanh(X)
 
@@ -87,7 +87,7 @@ class Linear(Activation):
     def __init__(self):
         super().__init__()
 
-    def forward(self, X):
+    def train_forward(self, X):
         self.__gradient = np.ones(X.shape)
         return X
 
@@ -100,7 +100,7 @@ class Relu(Activation):
     def __init__(self):
         super().__init__()
 
-    def forward(self, X):
+    def train_forward(self, X):
         self.__gradient = (X >= 0).astype(int)
         output = np.multiply((X >= 0).astype(int), X)
         return output
@@ -114,7 +114,7 @@ class Relu(Activation):
 #     def __init__(self):
 #         super().__init__()
 #
-#     def forward(self, X):
+#     def train_forward(self, X):
 #         self.X = X
 #         return np.multiply((X >= 0).astype(int), X)
 #

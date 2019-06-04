@@ -56,10 +56,10 @@ class Sequential:
 
                 # 运行中间的layer
                 for each_layer in self.layers:
-                    X = each_layer.forward(X)
+                    X = each_layer.train_forward(X)
 
                 # 运行最后的loss
-                self.loss.forward(y=y, yhat=X)
+                self.loss.train_forward(y=y, yhat=X)
 
                 # Back-prop
                 grad = self.loss.gradient  # Grad 是全局back-prop的 gradient
@@ -86,5 +86,5 @@ class Sequential:
 
     def predict(self, X):
         for each_layer in self.layers:
-            X = each_layer.forward(X)
+            X = each_layer.train_forward(X)
         return X

@@ -137,7 +137,7 @@ class RNN(base.Layer):
                                       output_units=self.output_units,
                                       activation=self.activation)
 
-    def forward(self, X):
+    def train_forward(self, X):
 
         '''
         :param X: n x p ; p 应该与 number_of_RNN_cell 保持一致

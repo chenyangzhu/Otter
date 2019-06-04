@@ -5,7 +5,7 @@ class Layer():
     def __init__(self):
         pass
 
-    def forward(self, X):
+    def train_forward(self, X):
         '''
         如果可以的话，gradient尽量从forward中update
         但遇到activation内置的情况，可以在update_gradient中嵌入。
@@ -14,13 +14,22 @@ class Layer():
         '''
         pass
 
+    def pred_forward(self, X):
+        '''
+        有一些方法例如 dropout，有不同的pred和train的method
+        默认为直接返回train_forward, unless specified
+        :param X:
+        :return:
+        '''
+        return self.train_forward(X)
+
     def update_gradient(self, grad, method, minibatch=-1):
         '''
         用来跟新gradient，（用于back prop的时候）
         :param grad:
         :param method:      "full"
                             "stochastic"
-        :param minibatch:  mini-batch 默认为 -1， 只有在stochastic的时候，才需要用minibatch
+        :param minibatch:   mini-batch 默认为 -1， 只有在stochastic的时候，才需要用 minibatch
         :return:
         '''
         pass
