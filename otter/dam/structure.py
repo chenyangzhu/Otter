@@ -2,16 +2,29 @@ import numpy as np
 
 class Variable:
 
-    def __init__(self, tensor, from1=None, from2=None):
+    def __init__(self, tensor, from1=None, from2=None, path='input'):
+        '''
+
+        :param tensor:
+        :param from1:
+        :param from2:
+        :param path:    用来存储这个变量得到的方式，用来计算backprop
+        '''
         self.x = tensor
         self.from1 = from1
         self.from2 = from2
-        # self.__str__ = "otter_variable_" + name
+        self.next = None
+
         self.gradient = np.ones(self.x.shape)
+        self.path = path
 
     @property
     def value(self):
         return self.x
+
+    @property
+    def shape(self):
+        return self.x.shape
 
     @property
     def T(self):
@@ -19,36 +32,48 @@ class Variable:
 
     def update_gradient(self):
         # Update gradients
-        self.gradient = self.new_variable.gradient
-        y.gradient = self.new_variable.gradient
 
-    def __add__(self, y):
-        '''
+        if self.next != None:
+
+            if self.path == "add":
+                self.from1.gradient = self.next.gradient
+                self.from2.gradient = self.next.gradient
+
+            elif self.path == "sub":
+                self.from1.gradient = self.next.gradient
+                self.from2.gradient = - self.next.gradient
+        else:
+            self.from1.gradient = np.ones(self.from1.shape)
+            self.from2.gradient = np.ones(self.from2.shape)
+
+    def add(self, y):
+        """
         :param y: Also a variable
         :return:
-        '''
-        self.new_variable = Variable(self.value + y.value, from1=self, from2=y
+        """
+        self.next = Variable(self.value + y.value, from1=self, from2=y)
+        self.next.path = 'add'
+        return self.next
 
-        return self.new_variable
-
-    def __sub__(self, y):
-        '''
+    def sub(self, y):
+        """
         :param y: Also a variable
         :return:
-        '''
-        return Variable(self.value - y.value, from1=self, from2=y)
+        """
+        self.next = Variable(self.value - y.value, from1=self, from2=y)
+        self.next.path = 'sub'
+        return self.next
 
-    def __matmul__(self, y):
-        '''
+    def dot(self, y):
+        """
         @ - matmul
         :param y:
         :return:
-        '''
-
+        """
         return Variable(np.matmul(self.value, y.value),
                         from1=self, from2=y)
 
-    def __mul__(self, y):
+    def multiply(self, y):
         '''
         Element-wise multiplication
         :param y:
@@ -57,17 +82,14 @@ class Variable:
         return Variable(np.multiply(self.value, y.value),
                         from1=self, from2=y)
 
-    def concat(self, y, axis):
-        return
 
 if __name__ == "__main__":
 
-    a = Variable(np.array(range(10)).reshape((2, 5)))
+    a = Variable(np.array(range(10)).reshape((5, 2)))
     b = Variable(np.array(range(10)).reshape((5, 2)))
+    c = a.sub(b)
 
-    print((a @ b).value)
-    print((a @ b).from2.value)
-
-    print((a * b.T).value)
-
-    
+    c.update_gradient()
+    print(c.gradient)
+    print(a.gradient)
+    print(b.gradient)
