@@ -1,4 +1,4 @@
-from klausnet.history import history_recorder
+from otter.history import history_recorder
 
 class Sequential:
     def __init__(self, layers):

@@ -1,6 +1,8 @@
 import numpy as np
 
 
+
+
 def add(A, B):
     '''
     A - np matrix
@@ -54,5 +56,3 @@ def minimum(A):
     return_dict = {"output": minimum,
                    "gradient": gradient}
     return return_dict
-
-

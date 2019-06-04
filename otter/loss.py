@@ -1,4 +1,4 @@
-from klausnet.nn import *
+from otter.math import *
 
 
 class Loss:

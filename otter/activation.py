@@ -17,7 +17,7 @@ return dict 的目的是Activation 要和 Layer 相统一
 
 
 import numpy as np
-from klausnet.layers import Layer
+from otter.layers import Layer
 
 
 class Activation(Layer):

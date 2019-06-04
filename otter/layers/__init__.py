@@ -9,7 +9,7 @@ Layers
 """
 
 
-from klausnet.layers.fully_connected import Dense
-from klausnet.layers.convolution import Conv2D, MaxPooling2D
-from klausnet.layers.recurrent import SimpleRNNCell
-from klausnet.layers.base import Layer
+from otter.layers.fully_connected import Dense
+from otter.layers.convolution import Conv2D, MaxPooling2D
+from otter.layers.recurrent import SimpleRNNCell
+from otter.layers.base import Layer

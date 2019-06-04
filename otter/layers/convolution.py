@@ -1,4 +1,4 @@
-from klausnet.layers import base
+from otter.layers import base
 import numpy as np
 
 # CNN
