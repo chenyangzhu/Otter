@@ -1,8 +1,5 @@
 import numpy as np
 
-
-
-
 def add(A, B):
     '''
     A - np matrix

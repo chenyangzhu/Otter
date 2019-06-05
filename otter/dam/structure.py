@@ -2,21 +2,26 @@ import numpy as np
 
 class Variable:
 
-    def __init__(self, tensor, from1=None, from2=None, path='input'):
+    def __init__(self, x, lchild=None, rchild=None, path='input'):
         '''
 
-        :param tensor:
-        :param from1:
-        :param from2:
+        :param x:
+        :param lchild:
+        :param rchild:
         :param path:    用来存储这个变量得到的方式，用来计算backprop
         '''
-        self.x = tensor
-        self.from1 = from1
-        self.from2 = from2
-        self.next = None
 
+        self.x = x
+        self.lchild = lchild
+        self.rchild = rchild
+        self.parent = None
         self.gradient = np.ones(self.x.shape)
-        self.path = path
+        self.path = path  # 记录的是自己是如何得到的，与之后的parent无关
+
+        # In-grad 的形状不定，应该与之后的parent一致
+        self.in_grad = None
+        # out-grad 的性状确定，必须和本层的input的shape一样
+        self.out_grad = np.ones(self.x.shape)
 
     @property
     def value(self):
@@ -26,43 +31,47 @@ class Variable:
     def shape(self):
         return self.x.shape
 
-    @property
+    '''
+    下面的这些操作，是对自身的变换，但仍然需要增加一个parent节点，把自己注册为lchild
+    '''
+
     def T(self):
-        return Variable(self.value.T, from1=None)
+        self.parent = Variable(self.value.T,
+                               lchild=self,
+                               path='T')
+        return self.parent
 
-    def update_gradient(self):
-        # Update gradients
+    def maximum(self):
+        self.parent = Variable(np.max(self.value),
+                               lchild=self,
+                               path='maximum')
+        return self.parent
 
-        if self.next != None:
+    # def minimum(self):
 
-            if self.path == "add":
-                self.from1.gradient = self.next.gradient
-                self.from2.gradient = self.next.gradient
-
-            elif self.path == "sub":
-                self.from1.gradient = self.next.gradient
-                self.from2.gradient = - self.next.gradient
-        else:
-            self.from1.gradient = np.ones(self.from1.shape)
-            self.from2.gradient = np.ones(self.from2.shape)
+    '''
+    下面的这些操作，全部都是为二叉树加一个parent节点，
+    '''
 
     def add(self, y):
         """
         :param y: Also a variable
         :return:
         """
-        self.next = Variable(self.value + y.value, from1=self, from2=y)
-        self.next.path = 'add'
-        return self.next
+        self.parent = Variable(self.value + y.value,
+                               lchild=self, rchild=y,
+                               path='add')
+        return self.parent
 
     def sub(self, y):
         """
         :param y: Also a variable
         :return:
         """
-        self.next = Variable(self.value - y.value, from1=self, from2=y)
-        self.next.path = 'sub'
-        return self.next
+        self.parent = Variable(self.value - y.value,
+                               lchild=self, rchild=y,
+                               path='sub')
+        return self.parent
 
     def dot(self, y):
         """
@@ -71,25 +80,36 @@ class Variable:
         :return:
         """
         return Variable(np.matmul(self.value, y.value),
-                        from1=self, from2=y)
+                        lchild=self, rchild=y,
+                        path="dot")
 
     def multiply(self, y):
-        '''
+        """
         Element-wise multiplication
         :param y:
         :return:
-        '''
+        """
         return Variable(np.multiply(self.value, y.value),
-                        from1=self, from2=y)
+                        lchild=self, rchild=y,
+                        path="multiply")
 
+    def update_lchild_gradient(self):
+        '''
+        每次backprop的时候，我们都是直接更新子节点的。
+        :return:
+        '''
+        if self.path == "add":
+            self.lchild.gradient = self.gradient
+        elif self.path == "sub":
+            self.lchild.gradient = self.gradient
 
-if __name__ == "__main__":
+    def update_rchild_gradient(self):
+        '''
+        每次backprop的时候，我们都是直接更新子节点的。
+        :return:
+        '''
 
-    a = Variable(np.array(range(10)).reshape((5, 2)))
-    b = Variable(np.array(range(10)).reshape((5, 2)))
-    c = a.sub(b)
-
-    c.update_gradient()
-    print(c.gradient)
-    print(a.gradient)
-    print(b.gradient)
+        if self.path == "add":
+            self.lchild.gradient = self.gradient
+        elif self.path == "sub":
+            self.lchild.gradient = - self.gradient
