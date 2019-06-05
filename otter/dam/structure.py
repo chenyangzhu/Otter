@@ -21,7 +21,7 @@ class Variable:
         # In-grad 的形状不定，应该与之后的parent一致
         self.in_grad = None
         # out-grad 的性状确定，必须和本层的input的shape一样
-        self.out_grad = np.ones(self.x.shape)
+        self.left_out_grad = self.right_out_grad = np.ones(self.x.shape)
 
     @property
     def value(self):
@@ -58,9 +58,18 @@ class Variable:
         :param y: Also a variable
         :return:
         """
+
         self.parent = Variable(self.value + y.value,
                                lchild=self, rchild=y,
                                path='add')
+
+        self.in_grad = self.parent.left_out_grad
+        y.in_grad = self.parent.right_out_grad
+
+
+        self.left_out_grad = self.in_grad
+        self.right_out_grad = self.in_grad
+
         return self.parent
 
     def sub(self, y):
@@ -71,6 +80,13 @@ class Variable:
         self.parent = Variable(self.value - y.value,
                                lchild=self, rchild=y,
                                path='sub')
+
+        self.in_grad = self.parent.left_out_grad
+        y.in_grad = self.parent.right_out_grad
+
+        self.left_out_grad = self.in_grad
+        self.right_out_grad = - self.in_grad
+
         return self.parent
 
     def dot(self, y):
@@ -98,18 +114,13 @@ class Variable:
         每次backprop的时候，我们都是直接更新子节点的。
         :return:
         '''
-        if self.path == "add":
-            self.lchild.gradient = self.gradient
-        elif self.path == "sub":
-            self.lchild.gradient = self.gradient
+        self.lchild.in_grad = self.left_out_grad
 
     def update_rchild_gradient(self):
+
         '''
         每次backprop的时候，我们都是直接更新子节点的。
         :return:
         '''
 
-        if self.path == "add":
-            self.lchild.gradient = self.gradient
-        elif self.path == "sub":
-            self.lchild.gradient = - self.gradient
+        self.rchild.in_grad = self.right_out_grad
