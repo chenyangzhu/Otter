@@ -23,7 +23,6 @@ class Graph:
         # 我们每次iteration 都是在更新 lchild and rchild 的 gradient！！！
         # 自己的gradient 永远是自己的parent那边更新的，
         # 如果没有parent，就直接是用初始化的时候的gradient！！！
-
         if variable.lchild != None:
 
             variable.update_lchild_gradient()
