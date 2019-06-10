@@ -3,12 +3,15 @@ Can further change how optimizers work.
 
 Further generalize the model into capability of coping with different w's and b's
 """
+import numpy as np
+from otter.dam.structure import Variable
+
 
 class Optimizer:
     def __init__(self):
         pass
 
-    def optimize(self, Layer):
+    def update_once(self, x: Variable):
         pass
 
 
@@ -17,7 +20,11 @@ class GradientDescent(Optimizer):
         super().__init__()
         self.learning_rate = learning_rate
 
-    def update_once(self, each_layer):
-        each_layer.w = each_layer.w - self.learning_rate * each_layer.gradient['w']
-        each_layer.b = each_layer.b - self.learning_rate * each_layer.gradient['b']
+    def update_once(self, x: Variable):
 
+        if x.param_share:
+            gradient = np.average(x.gradient, axis=1).reshape((x.gradient.shape[0], 1))
+        else:
+            gradient = x.gradient
+
+        x.value -= self.learning_rate * gradient

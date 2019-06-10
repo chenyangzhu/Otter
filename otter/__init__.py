@@ -1,3 +1,6 @@
 import numpy as np
 
-import klausnet.layers
+import otter.layers
+
+from otter.dam.structure import Variable
+

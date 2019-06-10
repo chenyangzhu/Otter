@@ -1,123 +1,71 @@
 """
-Activation Functions
-- Sigmoid
-- Softmax
-- Tanh
-- Linear
-- Relu
+In new activation, all we pass on is a Variable, and we return a Variable, which contains the graph built on the
+input Variable.
 
-注意了，所有的
-@property
-    def gradient(self):
-        return {'X': self.__gradient}
+In this way, we can easily build up the graph and allow the back-prop.
 
-return dict 的目的是Activation 要和 Layer 相统一
-本质上 Activation 应该是和Layer一样的东西。
 """
 
-
 import numpy as np
-from klausnet.layers import Layer
+from otter.dam.structure import Variable
 
 
-class Activation(Layer):
-    def __init__(self):
-        super().__init__()
-        pass
+def sigmoid(x: Variable):
+    return x.neg().exp().add(Variable(np.ones(1))).inv()
 
+# class Activation:
+#
+#     def __init__(self):
+#
+#         pass
+#
+#     def train_forward(self, x):
+#
+#         return x
+#
+#     def predict_forward(self, x):
+#         """
+#         By default, we'll return train_forward.
+#         The reason to keep track of two lines is that for layers like dropouts, it would be much easier to
+#         differentiate from the two paths. The activation layers are also in line with the real layers.
+#
+#         We'll omit this function in later child classes, as it is declared universally in the parent class,
+#         unless predict and train are different in some special cases.
+#
+#         :param x: Variable
+#         :return:  Variable
+#         """
+#
+#         return self.train_forward(x)
 
-class Sigmoid(Activation):
-    def __init__(self):
-        super().__init__()
-
-    def train_forward(self, X):
-        S = 1 / (1 + np.exp(-X))
-
-        # 虽然S有normalize的作用，但是进来的X
-        # 不知道为什么会变得非常非常大
-        # 个人认为原因应该是由于跟新weight的时候
-        # 导致这些数变得特别特别大
-
-        # Calculate Gradients
-        self.__gradient = np.multiply(S, (1 - S))
-        return S
-
-    @property
-    def gradient(self):
-        return {'x': self.__gradient}
-
-# TODO Write Gradients
-class Softmax(Activation):
-    def __init__(self):
-        super().__init__()
-
-    def train_forward(self, X):
-        '''
-        :param X: n x p matrix
-        :return:  n x p matrix
-        '''
-        # Forward
-        exp_matrix = np.exp(X)
-        exp_matrix_sum = np.sum(exp_matrix, axis=1).reshape(exp_matrix.shape[0],1)
-
-        # Back-prop
-        self.__gradient = (exp_matrix * exp_matrix_sum - exp_matrix ** 2) / (exp_matrix_sum ** 2)
-        output = exp_matrix / exp_matrix_sum
-        return output
-
-    @property
-    def gradient(self):
-        return {'x': self.__gradient}
-
-
-class Tanh(Activation):
-    def __init__(self):
-        super().__init__()
-
-    def train_forward(self, X):
-        self.X = X
-        return np.tanh(X)
-
-    @property
-    def gradient(self):
-        return 1 - np.tanh(self.X) ** 2
-
-
-class Linear(Activation):
-    def __init__(self):
-        super().__init__()
-
-    def train_forward(self, X):
-        self.__gradient = np.ones(X.shape)
-        return X
-
-    @property
-    def gradient(self):
-        return {'x': self.__gradient}
-
-
-class Relu(Activation):
-    def __init__(self):
-        super().__init__()
-
-    def train_forward(self, X):
-        self.__gradient = (X >= 0).astype(int)
-        output = np.multiply((X >= 0).astype(int), X)
-        return output
-
-    @property
-    def gradient(self):
-        return {'x': self.__gradient}
-
-
-# class LeakyRelu(Activation):
+# class Softmax(Activation):
 #     def __init__(self):
 #         super().__init__()
 #
-#     def train_forward(self, X):
-#         self.X = X
-#         return np.multiply((X >= 0).astype(int), X)
+#     def train_forward(self, x):
+#         # TODO Softmax
+#         pass
 #
-#     @property
-#     def gradient(self):
-#         return (self.X >= 0).astype(int)
+# class Tanh(Activation):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def train_forward(self, x):
+#         # TODO tanh
+#         pass
+#
+# class Linear(Activation):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def train_forward(self, x):
+#         return x
+#
+#
+# class Relu(Activation):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def train_forward(self, x):
+#         # TODO Relu
+#         pass
