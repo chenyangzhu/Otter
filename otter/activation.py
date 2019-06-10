@@ -4,6 +4,10 @@ input Variable.
 
 In this way, we can easily build up the graph and allow the back-prop.
 
+In e.g. softmax, the usual back-prop will not work with two grad-routes
+We therefore need to creat a new Variable, and write the gradient rule
+in the Variable class.
+
 """
 
 import numpy as np
@@ -13,39 +17,18 @@ from otter.dam.structure import Variable
 def sigmoid(x: Variable):
     return x.neg().exp().add(Variable(np.ones(1))).inv()
 
-# class Activation:
-#
-#     def __init__(self):
-#
-#         pass
-#
-#     def train_forward(self, x):
-#
-#         return x
-#
-#     def predict_forward(self, x):
-#         """
-#         By default, we'll return train_forward.
-#         The reason to keep track of two lines is that for layers like dropouts, it would be much easier to
-#         differentiate from the two paths. The activation layers are also in line with the real layers.
-#
-#         We'll omit this function in later child classes, as it is declared universally in the parent class,
-#         unless predict and train are different in some special cases.
-#
-#         :param x: Variable
-#         :return:  Variable
-#         """
-#
-#         return self.train_forward(x)
 
-# class Softmax(Activation):
-#     def __init__(self):
-#         super().__init__()
-#
-#     def train_forward(self, x):
-#         # TODO Softmax
-#         pass
-#
+def softmax(x: Variable):
+    # The reason to creat a new Variable, is to drop the connection and rewrite the gradients
+    # in dam.structure.Variable
+    exp_sum_inv = x.exp().sum(axis=1).inv()
+    output_value = x.exp().multiply(exp_sum_inv).value
+    output = Variable(output_value,
+                      lchild=x, path='softmax')
+    output.softmax_grad_parser = {"output": output_value}
+    return output
+
+
 # class Tanh(Activation):
 #     def __init__(self):
 #         super().__init__()

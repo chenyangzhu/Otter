@@ -1,4 +1,4 @@
-from otter.layers import base
+from otter.layers import common
 import numpy as np
 
 
@@ -109,7 +109,7 @@ class SimpleRNNCell():
                 'v': self.v,
                 'u': self.u}
 
-class RNN(base.Layer):
+class RNN(common.Layer):
     def __init__(self, input_shape, number_of_RNN_cell ,hidden_units,
                  output_units, activation, return_sequence, return_state):
 

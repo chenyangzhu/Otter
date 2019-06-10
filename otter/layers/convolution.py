@@ -1,8 +1,8 @@
-from otter.layers import base
+from otter.layers import common
 import numpy as np
 
 # CNN
-class Conv2D(base.Layer):
+class Conv2D(common.Layer):
     def __init__(self, input_shape, filters, kernel_size, strides,
                  padding, activation, learnable=True):
 
@@ -217,7 +217,7 @@ class Conv2D(base.Layer):
                 "b": self.b}
 
 
-class MaxPooling2D(base.Layer):
+class MaxPooling2D(common.Layer):
     def __init__(self, input_shape, pool_size, strides, padding):
         '''
 
@@ -309,7 +309,7 @@ class MaxPooling2D(base.Layer):
         return {"back": self.grad_x}
 
 
-class Flatten(base.Layer):
+class Flatten(common.Layer):
     def __init__(self):
         super().__init__()
         # There's no need to specify the input shape
