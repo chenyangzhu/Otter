@@ -8,27 +8,25 @@ from otter.activation import sigmoid
 from otter.layers.common import Dense, Dropout, BatchNormalization
 from otter.optimizer import GradientDescent, StochasticGradientDescent
 from otter.model import Sequential
-np.random.seed(2020)
+np.random.seed(2019)
 
 
 with Graph() as g:
     n = 1000
-    p = 10
+    p = 100
     m = 1
-    x = Variable(np.random.normal(0, 1, (n, p)))
-    y = Variable(np.random.normal(0, 1, (n, m)))
+    x = Variable(np.random.normal(0, 1, (n, p)), name='x')
+    y = Variable(np.random.normal(0, 1, (n, m)), name='y')
 
     layer1 = Dense(output_shape=10,
-                   input_shape=p,
                    activation=sigmoid)
-    norm = BatchNormalization()
     layer2 = Dense(output_shape=1,
-                   input_shape=10,
                    activation=sigmoid)
 
-    model = Sequential([layer1, norm, layer2])
+    model = Sequential([layer1,
+                        layer2])
 
-    optimizer = StochasticGradientDescent(0.1)
+    optimizer = GradientDescent(1)
     loss = mean_squared_error
 
     model.compile(graph=g, optimizer=optimizer,
