@@ -8,23 +8,21 @@ from otter.activation import sigmoid
 from otter.layers.common import Dense, Dropout
 from otter.optimizer import GradientDescent
 
-np.random.seed(2020)
+np.random.seed(2008)
 
 
 with Graph() as g:
-    n = 100
+    n = 1000
     p = 10
     m = 1
     x = Variable(np.random.normal(0, 1, (n, p)))
     y = Variable(np.random.normal(0, 1, (n, m)))
 
     layer1 = Dense(output_shape=10,
-                   input_shape=p,
                    activation=sigmoid)
-    layer2 = Dense(output_shape=1,
-                   input_shape=10,
+    layer2 = Dense(output_shape=m,
                    activation=sigmoid)
-    optimizer = GradientDescent(0.1)
+    optimizer = GradientDescent(0.8)
     loss = mean_squared_error
 
     loss_array = []

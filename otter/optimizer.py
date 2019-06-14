@@ -24,6 +24,9 @@ class Optimizer:
 
         n = grad.shape[0]
         if method == 'full':
+            # axis = 1, col-wise average
+            # axis = 0, row-wise average
+
             n_grad = np.average(grad, axis=1).reshape((grad.shape[0], 1))
 
         elif method == 'stochastic':
@@ -50,7 +53,6 @@ class GradientDescent(Optimizer):
     def update_once(self, x: Variable):
 
         if x.param_share:
-            # gradient = np.average(x.gradient, axis=1).reshape((x.gradient.shape[0], 1))
             gradient = self.gradient_parser(x.gradient, 'full', self.mini_batch)
         else:
             gradient = x.gradient

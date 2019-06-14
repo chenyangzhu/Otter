@@ -64,13 +64,6 @@ class Sequential:
 
                 # Back-prop
 
-                if isinstance(self.optimizer, StochasticGradientDescent):
-                    # Stochastic case
-                    # We only use a random gradient
-                    # TODO Change here
-                    print("Yes")
-                    output.gradient = output.gradient[np.random.randint(0, self.n-1)]
-
                 self.graph.update_gradient_with_optimizer(output, optimizer=self.optimizer)
 
                 batch_loss += output.value
