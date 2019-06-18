@@ -3,7 +3,7 @@ VALUE_CLIPPING_THRESHOLD = 2e2
 
 class Variable:
 
-    def __init__(self, x, lchild=None, rchild=None,
+    def __init__(self, x, dtype=None, lchild=None, rchild=None,
                  trainable=False, param_share=False,
                  name=None):
         """
@@ -17,6 +17,14 @@ class Variable:
         """
 
         self.value = x
+
+        # if dtype is None, we automatically generate dtype from x
+        # Else we check if the declared datatype is the same as the input data x
+        if dtype is None:
+            self.dtype = type(x)
+        else:
+            assert x.dtype == dtype
+
         self.lchild = lchild
         self.rchild = rchild
         self.parent = None
@@ -33,6 +41,7 @@ class Variable:
         Thus, if there's no back_prop function, it must be the input
         and we no longer need to do the back_prop on it.
         '''
+
         self.back_prop = None
 
     def __str__(self):
