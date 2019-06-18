@@ -2,22 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1266ad17-898f-40b0-8f97-7c71ffa93cfd" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/tests/test_operators.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/otter/dam/dtype.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otter/activation.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/activation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/otter/dam/graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/dam/graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otter/dam/structure.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/dam/structure.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otter/layers/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/layers/common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otter/layers/convolution.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/layers/convolution.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otter/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/loss.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/otter/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/optimizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/conv_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/conv_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/fashion_mnist.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/fashion_mnist.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/otter/layers/language.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/layers/language.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/otter/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/otter/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/pytorch_conv_test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/tests/pytorch_conv_test.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_loss.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_new_CNN.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_new_Dense.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_new_Dense.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_new_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_new_model.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -40,7 +30,7 @@
     <select />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.556941">
+    <splitter split-orientation="horizontal" split-proportion="0.32995567">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
@@ -55,13 +45,25 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/otter/layers/language.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="280">
-                  <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
+                <state relative-caret-position="1080">
+                  <caret line="54" column="41" lean-forward="true" selection-start-line="54" selection-start-column="41" selection-end-line="54" selection-end-column="41" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/otter/utils.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="340">
+                  <caret line="17" column="7" lean-forward="true" selection-start-line="17" selection-start-column="7" selection-end-line="17" selection-end-column="7" />
+                  <folding>
+                    <marker date="1560845850431" expanded="true" signature="74:263" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -86,18 +88,6 @@
                   <caret line="59" column="27" selection-start-line="59" selection-start-column="27" selection-end-line="59" selection-end-column="27" />
                   <folding>
                     <element signature="e#131#149#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tests/test_embedding.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="400">
-                  <caret line="20" column="35" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="35" />
-                  <folding>
-                    <element signature="e#0#18#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -134,22 +124,22 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tests/test_operators.py">
+            <entry file="file://$PROJECT_DIR$/tests/test_embedding.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="140">
-                  <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+                <state relative-caret-position="400">
+                  <caret line="20" column="35" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="35" />
                   <folding>
-                    <element signature="e#0#40#0" expanded="true" />
+                    <element signature="e#0#18#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/tests/test_new_model.py">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/tests/test_loss.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="420">
-                  <caret line="21" column="34" lean-forward="true" selection-start-line="21" selection-start-column="34" selection-end-line="21" selection-end-column="34" />
+                <state relative-caret-position="580">
+                  <caret line="29" column="14" lean-forward="true" selection-start-line="29" selection-start-column="14" selection-end-line="29" selection-end-column="14" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -161,11 +151,11 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/otter/dam/graph.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="920">
-                  <caret line="46" lean-forward="true" selection-start-line="46" selection-end-line="46" />
+                <state relative-caret-position="240">
+                  <caret line="21" column="27" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -176,8 +166,17 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/otter/dam/structure.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="321">
-                  <caret line="365" column="26" lean-forward="true" selection-start-line="365" selection-start-column="26" selection-end-line="365" selection-end-column="26" />
+                <state relative-caret-position="240">
+                  <caret line="12" column="36" selection-start-line="12" selection-start-column="36" selection-end-line="12" selection-end-column="36" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/otter/dam/dtype.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="80">
+                  <caret line="4" column="4" selection-start-line="4" selection-start-column="4" selection-end-line="4" selection-end-column="4" />
                 </state>
               </provider>
             </entry>
@@ -264,12 +263,10 @@
         <option value="$PROJECT_DIR$/otter/layers/__init__.py" />
         <option value="$PROJECT_DIR$/tests/test_CNN.py" />
         <option value="$PROJECT_DIR$/otter/model.py" />
-        <option value="$PROJECT_DIR$/otter/utils.py" />
         <option value="$PROJECT_DIR$/tests/test_embedding.py" />
         <option value="$PROJECT_DIR$/tests/test_new_new_operators.py" />
         <option value="$PROJECT_DIR$/tests/test_operator.py" />
         <option value="$PROJECT_DIR$/otter/layers/recurrent.py" />
-        <option value="$PROJECT_DIR$/otter/layers/language.py" />
         <option value="$PROJECT_DIR$/tests/test_new_CNN.py" />
         <option value="$PROJECT_DIR$/tests/conv.py" />
         <option value="$PROJECT_DIR$/tests/conv_test.py" />
@@ -281,16 +278,20 @@
         <option value="$PROJECT_DIR$/otter/optimizer.py" />
         <option value="$PROJECT_DIR$/tests/test_new_Dense.py" />
         <option value="$PROJECT_DIR$/otter/activation.py" />
-        <option value="$PROJECT_DIR$/otter/dam/structure.py" />
         <option value="$PROJECT_DIR$/otter/loss.py" />
         <option value="$PROJECT_DIR$/otter/layers/common.py" />
         <option value="$PROJECT_DIR$/otter/dam/graph.py" />
+        <option value="$PROJECT_DIR$/otter/utils.py" />
+        <option value="$PROJECT_DIR$/otter/layers/language.py" />
+        <option value="$PROJECT_DIR$/otter/dam/structure.py" />
+        <option value="$PROJECT_DIR$/dtype.py" />
+        <option value="$PROJECT_DIR$/otter/dtype.py" />
+        <option value="$PROJECT_DIR$/otter/dam/dtype.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="209" />
-    <option name="y" value="84" />
+    <option name="x" value="174" />
     <option name="width" value="1616" />
     <option name="height" value="1028" />
   </component>
@@ -330,17 +331,6 @@
               <item name="Otter" type="462c0819:PsiDirectoryNode" />
               <item name="otter" type="462c0819:PsiDirectoryNode" />
               <item name="dam" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Otter" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Otter" type="462c0819:PsiDirectoryNode" />
-              <item name="otter" type="462c0819:PsiDirectoryNode" />
-              <item name="layers" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Otter" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Otter" type="462c0819:PsiDirectoryNode" />
-              <item name="tests" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -385,6 +375,12 @@
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/otter/dam" />
+      <recent name="$PROJECT_DIR$/otter" />
+    </key>
+  </component>
   <component name="RunDashboard">
     <option name="ruleStates">
       <list>
@@ -397,7 +393,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.fashion_mnist">
+  <component name="RunManager" selected="Python.language">
     <configuration name="fashion_mnist" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Otter" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -412,6 +408,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/fashion_mnist.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="language" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Otter" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/otter/layers" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/otter/layers/language.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -442,28 +460,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_new_model" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="Otter" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_new_model.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="test_operators" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Otter" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -486,29 +482,35 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest in test_new_model.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+    <configuration name="utils" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Otter" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/otter" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/test_new_model.py&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/otter/utils.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.language" />
+        <item itemvalue="Python.utils" />
         <item itemvalue="Python.fashion_mnist" />
         <item itemvalue="Python.test_new_Dense" />
         <item itemvalue="Python.test_operators" />
-        <item itemvalue="Python.test_new_model" />
-        <item itemvalue="Python tests.pytest in test_new_model.py" />
       </list>
     </recent_temporary>
   </component>
@@ -527,7 +529,7 @@
       <workItem from="1560299823002" duration="21498000" />
       <workItem from="1560385928160" duration="23389000" />
       <workItem from="1560472399130" duration="24300000" />
-      <workItem from="1560817653121" duration="19970000" />
+      <workItem from="1560817653121" duration="25996000" />
     </task>
     <servers />
   </component>
@@ -555,7 +557,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="122944000" />
+    <option name="totallyTimeSpent" value="128970000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -591,7 +593,7 @@
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="1" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="2" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="3" weight="0.25" />
-      <window_info anchor="right" id="SciView" order="4" visible="true" weight="0.20064034" />
+      <window_info anchor="right" id="SciView" order="4" weight="0.24759872" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -605,9 +607,10 @@
     <SUITE FILE_PATH="coverage/Otter$pytest_in_test_operator_py.coverage" NAME="pytest in test_operator.py Coverage Results" MODIFIED="1560222104541" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/Otter$test_CNN.coverage" NAME="test_CNN Coverage Results" MODIFIED="1560214899780" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/Otter$test_loss.coverage" NAME="test_loss Coverage Results" MODIFIED="1560152589983" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/Otter$language.coverage" NAME="language Coverage Results" MODIFIED="1560231036189" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/otter/layers" />
+    <SUITE FILE_PATH="coverage/Otter$utils.coverage" NAME="utils Coverage Results" MODIFIED="1560845850678" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/otter" />
     <SUITE FILE_PATH="coverage/Otter$pytest_in_test_new_Dense_py.coverage" NAME="pytest in test_new_Dense.py Coverage Results" MODIFIED="1560152594496" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/Otter$fashion_mnist.coverage" NAME="fashion_mnist Coverage Results" MODIFIED="1560841373469" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/Otter$fashion_mnist.coverage" NAME="fashion_mnist Coverage Results" MODIFIED="1560844888746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/Otter$language.coverage" NAME="language Coverage Results" MODIFIED="1560845984541" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/otter/layers" />
     <SUITE FILE_PATH="coverage/Otter$test_operators.coverage" NAME="test_operators Coverage Results" MODIFIED="1560836250837" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/Otter$conv_test.coverage" NAME="conv_test Coverage Results" MODIFIED="1560827584002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/Otter$test_embedding.coverage" NAME="test_embedding Coverage Results" MODIFIED="1560301841866" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
@@ -632,13 +635,6 @@
           <folding>
             <element signature="e#0#42#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/otter/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="76">
-          <caret line="4" selection-start-line="4" selection-end-line="4" />
         </state>
       </provider>
     </entry>
@@ -706,32 +702,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_embedding.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="400">
-          <caret line="20" column="35" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_operators.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="140">
           <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
           <folding>
             <element signature="e#0#40#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_loss.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="519">
-          <caret line="28" selection-start-line="28" selection-end-line="28" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -756,9 +732,6 @@
           </folding>
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/pytorch_conv_test.ipynb">
-      <provider selected="true" editor-type-id="jupyter-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/otter/optimizer.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -810,10 +783,66 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/otter/dam/structure.py">
+    <entry file="file://$PROJECT_DIR$/otter/layers/common.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="321">
-          <caret line="365" column="26" lean-forward="true" selection-start-line="365" selection-start-column="26" selection-end-line="365" selection-end-column="26" />
+        <state relative-caret-position="387">
+          <caret line="38" column="24" lean-forward="true" selection-start-line="38" selection-start-column="24" selection-end-line="38" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/otter/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="17" column="7" lean-forward="true" selection-start-line="17" selection-start-column="7" selection-end-line="17" selection-end-column="7" />
+          <folding>
+            <marker date="1560845850431" expanded="true" signature="74:263" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/otter/dam/graph.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="21" column="27" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/otter/layers/language.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1080">
+          <caret line="54" column="41" lean-forward="true" selection-start-line="54" selection-start-column="41" selection-end-line="54" selection-end-column="41" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/pytorch_conv_test.ipynb">
+      <provider selected="true" editor-type-id="jupyter-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_embedding.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="20" column="35" selection-start-line="20" selection-start-column="35" selection-end-line="20" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_loss.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="580">
+          <caret line="29" column="14" lean-forward="true" selection-start-line="29" selection-start-column="14" selection-end-line="29" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -827,33 +856,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/otter/dam/graph.py">
+    <entry file="file://$PROJECT_DIR$/otter/dam/structure.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="920">
-          <caret line="46" lean-forward="true" selection-start-line="46" selection-end-line="46" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="240">
+          <caret line="12" column="36" selection-start-line="12" selection-start-column="36" selection-end-line="12" selection-end-column="36" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/otter/layers/common.py">
+    <entry file="file://$PROJECT_DIR$/otter/dam/dtype.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="387">
-          <caret line="38" column="24" lean-forward="true" selection-start-line="38" selection-start-column="24" selection-end-line="38" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/otter/layers/language.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="80">
+          <caret line="4" column="4" selection-start-line="4" selection-start-column="4" selection-end-line="4" selection-end-column="4" />
         </state>
       </provider>
     </entry>
