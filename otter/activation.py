@@ -15,18 +15,18 @@ from otter.dam.structure import Variable
 
 
 def sigmoid(x: Variable):
-    return x.neg().safe_exp().add(Variable(np.ones(1))).inv()
+    return x.neg().safe_exp().add(Variable(np.ones(1))).safe_inv()
 
 
 def softmax(x: Variable, axis=0):
     # The reason to creat a new Variable, is to drop the connection and rewrite the gradients
     # in dam.structure.Variable
     # print(x.value)
-    M = np.max(x.value)
+    M = x.maximum()
     # print(M)
-    small_x = x.value - M
+    small_x = x - M
     # print(small_x)
-    exp_small_x = np.exp(small_x)
+    exp_small_x = small_x.safe_exp().value
 
     '''
     The reason we subtract the maximum value from x

@@ -57,6 +57,7 @@ class GradientDescent(Optimizer):
         else:
             gradient = x.gradient
 
+        # Gradient Clipping
         x.value -= self.learning_rate * gradient
 
 

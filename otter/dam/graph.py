@@ -18,16 +18,19 @@ class Graph:
 
     def update_gradient_with_optimizer(self, x: Variable, optimizer: Optimizer):
         # print(type(x))
+
+        # Gradient Clipping
+        GRADIENT_CLIPPING_THRESHOLD = 1e4
+        mask = (x.gradient < GRADIENT_CLIPPING_THRESHOLD).astype(int)
+        contra_mask = (x.gradient > GRADIENT_CLIPPING_THRESHOLD).astype(int)
+        x.gradient = np.multiply(mask, x.gradient) + contra_mask * GRADIENT_CLIPPING_THRESHOLD
+
         if x.back_prop is not None:
-
-            # '''
-            # Gradient Clipping
-            # '''
-            #
-            # if np.sum(x.gradient ** 2) > GRADIENT_CLIPPING_THRESHOLD:
-            #     x.gradient = np.sign(x.gradient) * GRADIENT_MAGNIFIER
-
+            # which means x is an input node
             x.back_prop()
+
+        if x.trainable:
+            optimizer.update_once(x)
 
         if x.lchild is not None:
             self.update_gradient_with_optimizer(x.lchild, optimizer)
@@ -37,9 +40,6 @@ class Graph:
 
         # After updating the children's gradient
         # We update the value if trainable
-
-        if x.trainable:
-            optimizer.update_once(x)
 
     def update_gradient(self, x: Variable):
         if x.back_prop is not None:

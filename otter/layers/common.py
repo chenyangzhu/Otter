@@ -20,8 +20,7 @@ class Layer():
 
 
 class Dense(Layer):
-    def __init__(self, output_shape,
-                 activation, trainable=True):
+    def __init__(self, output_shape, activation, trainable=True):
 
         '''
         :param output_shape:   # of hidden units
@@ -33,21 +32,23 @@ class Dense(Layer):
         self.m = output_shape
         self.trainable = trainable
         self.activation = activation
+        self.initialize = True
 
     def train_forward(self, x: Variable):
         # Forward Propagation
         # print(x.shape)
         self.p = x.shape[1]  # input_tensor shape
 
-        self.w = Variable(np.random.normal(0, 1, (self.p, self.m)),
-                          trainable=self.trainable, name='Dense_w')
-        self.b = Variable(np.random.normal(0, 1, (self.m, 1)),
-                          trainable=self.trainable, param_share=True,
-                          name='Dense_b')
+        if self.initialize:
+            self.w = Variable(np.random.normal(0, 1, (self.p, self.m)),
+                              trainable=self.trainable, name='Dense_w')
+            self.b = Variable(np.random.normal(0, 1, (self.m, 1)),
+                              trainable=self.trainable, param_share=True,
+                              name='Dense_b')
+            self.initialize = False
 
         output = x.dot(self.w) + self.b.T()
-        output = self.activation(output)
-        return output
+        return self.activation(output)
 
     def predict_forward(self, x: Variable):
         return self.train_forward(x)
@@ -99,7 +100,7 @@ class BatchNormalization(Layer):
     def train_forward(self, x: Variable):
         x_val = x.value
         self.mean = Variable(np.average(x.value))
-        self.var_inv = Variable(np.array(np.var(x_val))).inv()
+        self.var_inv = Variable(np.array(np.var(x_val))).safe_inv()
         output = x.sub(self.mean).multiply(self.var_inv)
         return output
 

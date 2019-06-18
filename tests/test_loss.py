@@ -27,5 +27,4 @@ with Graph() as g:
     print("i", i.gradient)
     print(i)
 
-
     print(ans)

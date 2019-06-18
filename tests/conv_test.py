@@ -38,6 +38,9 @@ def read_data():
 
 
 if __name__ == "__main__":
+
+    np.random.seed(2019)
+
     (x_train, y_train), (x_test, y_test) = read_data()
 
     x_train = x_train[0]
@@ -58,17 +61,15 @@ if __name__ == "__main__":
     y_train = Variable(y_train)
 
     with Graph() as g:
-        layer1 = Conv2D(input_shape=(c, x_dim, y_dim),
-                        filters=16,
+        layer1 = Conv2D(in_channel=c,
+                        out_channel=16,
                         kernel_size=(3, 3),
-                        strides=(1, 1),
-                        padding=None,
-                        activation=relu,
-                        trainable=True)
+                        stride=(1, 1),
+                        bias=False)
 
         a = layer1.train_forward(x_train)
         # print(a.shape)
         print(a)
-        # plt.imshow(a.value)
-        # plt.show()
+        plt.imshow(a.value[0, 1])
+        plt.show()
         g.update_gradient(a)

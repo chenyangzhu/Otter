@@ -24,6 +24,7 @@ class Variable:
         self.trainable = trainable
         self.param_share = param_share
         self.name = name
+        self.back_prop = None
 
         '''
         The back_prop function is what we use to do back_propagation
@@ -54,14 +55,14 @@ class Variable:
     They are registered as lchild.
     '''
 
-    def T(self):
+    def T(self):  # Checked
         self.parent = Variable(x=self.value.T,
                                lchild=self)
 
         self.parent.back_prop = self.parent.back_T
         return self.parent
 
-    def back_T(self):
+    def back_T(self):  # Checked
         self.lchild.gradient = self.gradient.T
 
     def maximum(self, axis=None):
@@ -121,11 +122,13 @@ class Variable:
     def back_exp(self):
         self.lchild.gradient = np.multiply(self.gradient, self.value)
 
+    def safe_inv(self):
+        return (self + Variable(np.ones(1) * 1e-6)).inv()
+
     def inv(self):
 
         # In case of 1/0
-        self.value += 0.0001
-
+        # self.value += 0.0001
 
         self.parent = Variable(1 / self.value,
                                lchild=self)
@@ -252,8 +255,11 @@ class Variable:
             self.gradient = self.gradient.reshape(gradient_shape)
             self.lchild.gradient = np.ones(shape) * self.gradient / shape[axis]
 
+    def safe_log(self):
+        return (self + Variable(np.ones(1) * 1e-6)).log()
+
     def log(self):
-        self.value += 0.0001
+        # self.value += 0.0001
 
         self.parent = Variable(np.log(self.value),
                                lchild=self)
@@ -279,10 +285,11 @@ class Variable:
         # TODO This is a 2D example
         mask = np.zeros_like(self.value)
         if axis == 0:
-            output = self.value[index, np.arange(self.shape[1])].reshape((1, self.shape[1]))
+            output = self.value[index,
+                                np.arange(self.shape[1])].reshape((1, self.shape[1]))
             mask[index, np.arange(self.shape[1])] = 1
         elif axis == 1:
-            output = self.value[np.arange(self.shape[0]), index.reshape(self.shape[0],)].reshape((self.shape[0], 1))
+            output = self.value[np.arange(self.shape[0]), index].reshape((self.shape[0], 1))
             mask[np.arange(self.shape[0]), index] = 1
             # print(index)
 
@@ -411,20 +418,20 @@ class Variable:
         self.rchild.gradient = np.multiply(self.gradient,
                                            self.multiply_grad_parser['x'])
 
-    def div(self, y):
-        """
-        Element-wise division
-        :param y:
-        :return:
-        """
-        self.parent = Variable(self.value / y.value,
-                               lchild=self, rchild=y)
-        self.parent.back_prop = self.parent.back_div
-        return self.parent
-
-    def back_div(self):
-        # TODO write gradients
-        self.lchild.gradient = 0
+    # def div(self, y):
+    #     """
+    #     Element-wise division
+    #     :param y:
+    #     :return:
+    #     """
+    #     self.parent = Variable(self.value / y.value,
+    #                            lchild=self, rchild=y)
+    #     self.parent.back_prop = self.parent.back_div
+    #     return self.parent
+    #
+    # def back_div(self):
+    #     # TODO write gradients
+    #     self.lchild.gradient = 0
 
     """
     Activations
@@ -434,10 +441,10 @@ class Variable:
         self.lchild.gradient = np.multiply(self.value * (1 - self.value),
                                            self.gradient)
 
-    def back_tanh(self):
-        M = self.tanh_grad_parser['M']
-        xvalue = self.tanh_grad_parser['xvalue']
-        self.lchild.gradient = (np.exp(xvalue-M) + np.exp(-xvalue - M) - np.exp(-M))/(np.exp(xvalue-M) - np.exp(-xvalue-M))
+    # def back_tanh(self):
+    #     M = self.tanh_grad_parser['M']
+    #     xvalue = self.tanh_grad_parser['xvalue']
+    #     self.lchild.gradient = (np.exp(xvalue-M) + np.exp(-xvalue - M) - np.exp(-M))/(np.exp(xvalue-M) - np.exp(-xvalue-M))
 
     """
     Layers
@@ -460,6 +467,9 @@ class Variable:
                             image_idx, channel_idx, i, j]
         self.lchild.gradient = grad_x
 
+    def back_mapping(self):
+        for each in self.w2mapping:
+            self.lchild.gradient[each[0]] = self.gradient[each[1]]
 
     def conv2d(self, w, stride, padding):
         """
@@ -479,36 +489,34 @@ class Variable:
         self.parent = Variable(np.zeros((n, f, x_new, y_new)),
                                lchild=self, rchild=w)
 
-
         '''
         In this mapping matrix, we use lists to store a 3d mapping with
         [new_matrix_index, old_matrix_index, and weight_matrix_index]
         During each iteration, whenever we have a mappping, we append a new list
         containing these three variables.
-        
-        During the back_prop, we search in the list for the corresponding index, 
+
+        During the back_prop, we search in the list for the corresponding index,
         and sum all the rows we have.
         '''
 
         # Method 2
         # We first create a mapping
-        mapping = Variable(np.zeros((c*x*y, f*x_new*y_new)))
+        mapping = []
+        # def idx_four2two(idx, shape):
+        #     """
+        #     This function transform a 4d index (n, channel, x, y) to a 1d number,
+        #     with accordance to np.reshape()
+        #
+        #     :param idx:     the index
+        #     :param shape:   the input_tensor shape [n, max_channel, max_x, max_y]
+        #     :return:
+        #     """
+        #     new_idx = idx[1] * np.prod(shape[2:]) + idx[2] * shape[3] + idx[3]
+        #     return idx[0], new_idx
 
-        def idx_four2two(idx, shape):
-            """
-            This function transform a 4d index (n, channel, x, y) to a 1d number,
-            with accordance to np.reshape()
-
-            :param idx:     the index
-            :param shape:   the input_tensor shape [n, max_channel, max_x, max_y]
-            :return:
-            """
-            new_idx = idx[1] * np.prod(shape[2:]) + idx[2] * shape[3] + idx[3]
-            return idx[0], new_idx
-
-        def idx_three2one(idx, shape):
-            new_idx = idx[0] * np.prod(shape[1:]) + idx[1] * shape[2] + idx[2]
-            return new_idx
+        # def idx_three2one(idx, shape):
+        #     new_idx = idx[0] * np.prod(shape[1:]) + idx[1] * shape[2] + idx[2]
+        #     return new_idx
 
         # Building the mapping
         for filter_idx in range(f):
@@ -519,28 +527,18 @@ class Variable:
                     for ix in range(u):
                         for jx in range(v):
                             for channel_idx in range(c):
-
-                                # Index for new matrix
-                                mapping_new = idx_three2one((filter_idx, i, j),
-                                                            (f, x_new, y_new))
-
-                                # Index for old matrix
-                                mapping_old = idx_three2one((channel_idx, x_start + ix, y_start + jx),
-                                                            (c, x, y))
-
-                                mapping.value[mapping_old, mapping_new] = w[filter_idx, channel_idx, ix, jx]
-
+                                mapping.append([(filter_idx, i, j),
+                                                (channel_idx, x_start + ix, y_start + jx),
+                                                (filter_idx, channel_idx, ix, jx)])
         # Now mapping is already a valid sparse matrix with weight on its coords
 
+
+
         # We first need to reshape our x matrix
-        input_image_flattened = self.reshape((n, c*x*y))
-        new_image_flattened = input_image_flattened.dot(mapping)
-        new_image = new_image_flattened.reshape((n, f, x_new, y_new))
-
-        return new_image
-        
-
-        mapping = []
+        # input_image_flattened = self.reshape((n, c*x*y))
+        # new_image_flattened = input_image_flattened.dot(mapping)
+        # new_image = new_image_flattened.reshape((n, f, x_new, y_new))
+        # mapping = []
 
         record = True
         for image_idx in range(n):          # For each image
@@ -618,54 +616,54 @@ class Variable:
             gradient_w[each_map[2][0], each_map[2][1], each_map[2][2], each_map[2][3]] = np.matmul(self.gradient[:, each_map[0][0], each_map[0][1], each_map[0][2]].T,
                                                                           X[:, each_map[1][0], each_map[1][1], each_map[1][2]])
 
-        # # Logic 1, the very stupid approach.
-        # for image_idx in range(n):
-        #     for channel_idx in range(c):
-        #         for i in range(x):
-        #             for j in range(y):  # for each_element in the gradient matrix
-        #
-        #                 # search the mapping matrix for all (i,j) coord in the old matrix
-        #                 # i.e. the second col.
-        #                 output = 0
-        #
-        #                 # The logic here, is we iterate through the mapping matrix,
-        #                 # We then find all the rows that satisfies the index for the old x's.
-        #                 #
-        #                 for each_mapping in mapping:
-        #                     if each_mapping[1] == (i, j):
-        #                         # old x matrix, or grad_x or lchild gradient matrix
-        #                         for filter_idx in range(f):
-        #                             output += self.gradient[image_idx, filter_idx][each_mapping[0]] \
-        #                                       * w[filter_idx, channel_idx][each_mapping[2]]
-        #
-        #                 gradient_x[image_idx, channel_idx, i, j] = output
-        #
-        #         # End for each element in one channel of x
-        #     # End for each channel
-        # # End for each image
-        #
-        # for filter_idx in range(f):
-        #     for channel_idx in range(c):
-        #         for i in range(u):
-        #             for j in range(v):  # for each_element in the gradient matrix
-        #
-        #                 # search the mapping matrix for all (i,j) coord in the old matrix
-        #                 # i.e. the second col.
-        #                 output = 0
-        #                 for each_mapping in mapping:
-        #
-        #                     if each_mapping[2] == (i, j):
-        #
-        #                         # old x matrix, or grad_x or lchild gradient matrix
-        #                         for image_idx in range(n):
-        #                             output += self.gradient[image_idx, filter_idx][each_mapping[0]] \
-        #                                       * X[image_idx, channel_idx][each_mapping[1]]
-        #
-        #                 gradient_w[filter_idx, channel_idx, i, j] = output
-        #
-        #         # End for each element in one channel of x
-        #     # End for each channel
-        # # End for each image
+        # Logic 1, the very stupid approach.
+        for image_idx in range(n):
+            for channel_idx in range(c):
+                for i in range(x):
+                    for j in range(y):  # for each_element in the gradient matrix
+
+                        # search the mapping matrix for all (i,j) coord in the old matrix
+                        # i.e. the second col.
+                        output = 0
+
+                        # The logic here, is we iterate through the mapping matrix,
+                        # We then find all the rows that satisfies the index for the old x's.
+                        #
+                        for each_mapping in mapping:
+                            if each_mapping[1] == (i, j):
+                                # old x matrix, or grad_x or lchild gradient matrix
+                                for filter_idx in range(f):
+                                    output += self.gradient[image_idx, filter_idx][each_mapping[0]] \
+                                              * w[filter_idx, channel_idx][each_mapping[2]]
+
+                        gradient_x[image_idx, channel_idx, i, j] = output
+
+                # End for each element in one channel of x
+            # End for each channel
+        # End for each image
+
+        for filter_idx in range(f):
+            for channel_idx in range(c):
+                for i in range(u):
+                    for j in range(v):  # for each_element in the gradient matrix
+
+                        # search the mapping matrix for all (i,j) coord in the old matrix
+                        # i.e. the second col.
+                        output = 0
+                        for each_mapping in mapping:
+
+                            if each_mapping[2] == (i, j):
+
+                                # old x matrix, or grad_x or lchild gradient matrix
+                                for image_idx in range(n):
+                                    output += self.gradient[image_idx, filter_idx][each_mapping[0]] \
+                                              * X[image_idx, channel_idx][each_mapping[1]]
+
+                        gradient_w[filter_idx, channel_idx, i, j] = output
+
+                # End for each element in one channel of x
+            # End for each channel
+        # End for each image
 
         self.lchild.gradient = gradient_x
         self.rchild.gradient = gradient_w

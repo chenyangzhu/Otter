@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from otter import Variable
 from otter.loss import mean_squared_error
 from otter.dam.graph import Graph
-from otter.activation import sigmoid
+from otter.activation import sigmoid, relu
 from otter.layers.common import Dense, Dropout, BatchNormalization
 from otter.optimizer import GradientDescent, StochasticGradientDescent
 from otter.model import Sequential
@@ -18,10 +18,8 @@ with Graph() as g:
     x = Variable(np.random.normal(0, 1, (n, p)), name='x')
     y = Variable(np.random.normal(0, 1, (n, m)), name='y')
 
-    layer1 = Dense(output_shape=10,
-                   activation=sigmoid)
-    layer2 = Dense(output_shape=1,
-                   activation=sigmoid)
+    layer1 = Dense(output_shape=10)
+    layer2 = Dense(output_shape=1)
 
     model = Sequential([layer1,
                         layer2])
@@ -30,7 +28,7 @@ with Graph() as g:
     loss = mean_squared_error
 
     model.compile(graph=g, optimizer=optimizer,
-                  loss=loss, epoch=200, batch=10)
+                  loss=loss, epoch=100, batch=10)
 
     history = model.fit(x, y)
 

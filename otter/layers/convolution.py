@@ -5,13 +5,14 @@ from otter.dam.structure import Variable
 
 # CNN
 class Conv2D(common.Layer):
-    def __init__(self, in_channel, out_channel, kernel_size, stride=(1, 1),
+    def __init__(self, in_channel, out_channel, kernel_size, activation, stride=(1, 1),
                  padding=(0, 0), bias=True, trainable=True):
         """
         Convolution Layer 2D
         :param in_channel:      Int:    Number of input channels
         :param out_channel:     Int:    Number of output channels
         :param kernel_size:     Tuple:  kernel_size
+        :param activation:      Class:  Activation
         :param stride:          Tuple:  stride, default (1, 1)
         :param padding:         Tuple:  padding, default (0, 0)
         :param bias:            Bool:
@@ -31,12 +32,12 @@ class Conv2D(common.Layer):
         self.w = Variable(np.random.normal(0, 1, (self.out_channel, self.in_channel,
                                                   self.kernel_size[0], self.kernel_size[1])),
                           trainable=trainable)
-
+        self.activation = activation
         # To be compatible with the previous setup,
         # the shape of b needs to have a 1 on the last dimension.
         # Therefore, we need here the reversed, and on later implementations,
         # We need to add a transpose to the addition.
-
+        self.initialize = True
 
     def train_forward(self, X: Variable):
         '''
@@ -44,26 +45,70 @@ class Conv2D(common.Layer):
         # TODO add channel in different places
         :return:
         '''
-        self.n, _, self.x, self.y = X.shape
-        assert self.in_channel == X.shape[1]
 
-        # We first calculate the new matrix size.
-        self.x_new = int((self.x - self.kernel_size[0] + 2 * self.padding[0]) / self.stride[0] + 1)
-        self.y_new = int((self.y - self.kernel_size[1] + 2 * self.padding[1]) / self.stride[1] + 1)
+        def idx_three2one(idx, shape):
+            new_idx = idx[0] * np.prod(shape[1:]) + idx[1] * shape[2] + idx[2]
+            return new_idx
 
-        # Check 一下所有的维度是否正确
+        # Notice that we only need to calculate mapping once for all epochs
+        if self.initialize:
+            self.n, _, self.x, self.y = X.shape
+            assert self.in_channel == X.shape[1]
 
-        output = X.conv2d(self.w, stride=self.stride, padding=self.padding)
+            # We first calculate the new matrix size.
+            self.x_new = int((self.x - self.kernel_size[0] + 2 * self.padding[0]) / self.stride[0] + 1)
+            self.y_new = int((self.y - self.kernel_size[1] + 2 * self.padding[1]) / self.stride[1] + 1)
 
-        # Add bias if necessary
-        if self.bias:
+            self.old_length = self.in_channel * self.x * self.y
+            self.new_length = self.out_channel * self.x_new * self.y_new
+
+            # The thing about mapping is that we have to calculate the mapping during each iteration,
+            # Because w has changed within each iteration
+            # On the other hand, we have to keep w changing at the same time.
+            self.mapping = Variable(np.zeros((self.old_length, self.new_length)),
+                                    lchild=self.w)
+            self.mapping.back_prop = self.mapping.back_mapping
+
+            # We only need to initialize b once, with the knowledge of xnew and ynew
             self.b = Variable(np.random.normal(0, 1, list(reversed((1, self.out_channel,
                                                                     self.x_new, self.y_new)))),
                               trainable=self.trainable, param_share=True)
-            output1 = output + self.b
-            return output1
+            self.initialize = False
 
-        return output
+        # Building the mapping
+        self.mapping.w2mapping = []
+        for filter_idx in range(self.out_channel):
+            for i in range(self.x_new):
+                for j in range(self.y_new):
+                    # Index for new matrix
+                    mapping_new = idx_three2one((filter_idx, i, j),
+                                                (self.out_channel, self.x_new, self.y_new))
+                    x_start = int(i * self.stride[0])
+                    y_start = int(j * self.stride[1])
+                    for ix in range(self.kernel_size[0]):
+                        for jx in range(self.kernel_size[1]):
+                            for channel_idx in range(self.in_channel):
+                                # Index for old matrix
+                                mapping_old = idx_three2one((channel_idx, x_start + ix, y_start + jx),
+                                                            (self.in_channel, self.x, self.y))
+                                self.mapping.value[mapping_old, mapping_new] += self.w.value[filter_idx, channel_idx, ix, jx]
+                                # We have to record, which one in the mapping matrix is from which w
+                                self.mapping.w2mapping.append([(filter_idx, channel_idx, ix, jx),
+                                                               (mapping_old, mapping_new)])
+        # During later iterations, we don't have to calculate mapping at all.
+        # We first need to reshape our x matrix
+
+        input_image_flattened = X.reshape((self.n, self.old_length))
+        new_image_flattened = input_image_flattened.dot(self.mapping)
+        output = new_image_flattened.reshape((self.n, self.out_channel,
+                                              self.x_new, self.y_new))
+
+        # Add bias if necessary
+        if self.bias:
+            output1 = output + self.b
+            return self.activation(output1)
+
+        return self.activation(output)
 
     def predict_forward(self, x):
         return self.train_forward(x)
@@ -148,12 +193,5 @@ class Flatten(common.Layer):
 
     def train_forward(self, X):
         self.n, self.c, self.x, self.y = X.shape
-        output = Variable(X.value.reshape((self.n, self.c * self.x * self.y)),
-                        lchild=X)
-        output.back_prop = output.back_flatten
-        output.flatten_grad_parser = {"shape": X.shape}
+        output = X.reshape((self.n, self.c * self.x * self.y))
         return output
-
-    # @property
-    # def output_shape(self):
-    #     return self.c*self.x*self.y

@@ -38,10 +38,13 @@ def read_data():
 
 
 if __name__ == "__main__":
+
+    np.random.seed(2019)
+
     (x_train, y_train), (x_test, y_test) = read_data()
 
-    x_train = x_train[:500]
-    y_train = y_train[:500]
+    x_train = x_train[:2000]
+    y_train = y_train[:2000]
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
@@ -57,52 +60,52 @@ if __name__ == "__main__":
     y_train = Variable(y_train)
 
     with Graph() as g:
+
         layer1 = Conv2D(in_channel=c,
                         out_channel=16,
                         kernel_size=(3, 3),
-                        stride=(1, 1),
+                        stride=(2, 2),
+                        activation=sigmoid,
                         bias=False)
 
         layer2 = Conv2D(in_channel=16,
                         out_channel=8,
                         kernel_size=(3, 3),
-                        stride=(1, 1),
+                        stride=(2, 2),
+                        activation=relu,
                         bias=False)
 
         layer3 = Flatten()
 
-        layer4 = Dense(output_shape=128,
-                       activation=sigmoid,
-                       trainable=True)
-
-        layer5 = Dense(output_shape=64,
-                       activation=sigmoid,
-                       trainable=True)
+        layer4 = Dense(output_shape=64,
+                       activation=relu)
+        #
+        # layer5 = Dense(output_shape=32,
+        #                activation=sigmoid)
 
         layer6 = Dense(output_shape=10,
-                       activation=softmax,
-                       trainable=True)
+                       activation=softmax)
 
-        optimizer = GradientDescent(0.5)
+        optimizer = GradientDescent(0.1)
 
         loss_list = []
 
-        for i in range(400):
+        for i in range(4000):
             print(i)
-            a = relu(layer1.train_forward(x_train))
-            # b = layer2.train_forward(a)
-            # c = layer3.train_forward(a)
-            b = relu(layer2.train_forward(a))
+            a = layer1.train_forward(x_train)
+            b = layer2.train_forward(a)
             c = layer3.train_forward(b)
             d = layer4.train_forward(c)
-            e = layer5.train_forward(d)
-            f = layer6.train_forward(e)
+            f = layer6.train_forward(d)
             loss = sparse_categorical_crossentropy(y_train, f)
 
             g.update_gradient_with_optimizer(loss, optimizer)
+
+            print(layer1.w.gradient)
+
             loss_list.append(loss.value)
 
-            if i % 3 == 0:
+            if i % 10 == 0:
                 plt.clf()
                 plt.plot(loss_list)
                 plt.show()
