@@ -2,8 +2,8 @@ import numpy as np
 from otter.dam.structure import Variable
 from otter.optimizer import Optimizer
 
-GRADIENT_CLIPPING_THRESHOLD = 1e8
-GRADIENT_MAGNIFIER = 1e2
+# GRADIENT_CLIPPING_THRESHOLD = 1e8
+# GRADIENT_MAGNIFIER = 1e2
 
 
 class Graph:

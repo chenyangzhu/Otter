@@ -5,78 +5,68 @@ from otter.dam.structure import Variable
 
 # CNN
 class Conv2D(common.Layer):
-    def __init__(self, input_shape, filters, kernel_size, strides,
-                 padding, activation, trainable=True):
-
-        '''
-        :param input_shape:     [channel, row, col]
-        :param filters:         kernel 的维度，记为 p，同时也是输出的维度
-        :param kernel_size:     kernel 的大小，记为 (u, v)
-        :param strides:         (a, b) (向右stride，向下stride) a,b >= 1
-        :param padding:         "valid" means no padding;
-                                "causal" means;
-                                "same" means output has the same length as input
-                                TODO 先写valid 无padding，之后加上padding
-        :param activation:      activation function
-        :param learnable:       learnable=True，则在 gradient descent 的时候更新这层的param
-                                如果False，则不更新
-        '''
+    def __init__(self, in_channel, out_channel, kernel_size, stride=(1, 1),
+                 padding=(0, 0), bias=True, trainable=True):
+        """
+        Convolution Layer 2D
+        :param in_channel:      Int:    Number of input channels
+        :param out_channel:     Int:    Number of output channels
+        :param kernel_size:     Tuple:  kernel_size
+        :param stride:          Tuple:  stride, default (1, 1)
+        :param padding:         Tuple:  padding, default (0, 0)
+        :param bias:            Bool:
+        :param trainable:       Bool:
+        """
 
         super().__init__()
-        self.c, self.x, self.y = input_shape
-        self.f = filters        # Filter 数就是新的channel数。
-        self.u, self.v = kernel_size
-        self.sx, self.sy = strides
-        self.px = self.py = 0  # TODO 有了padding后，改为padding
-        self.activation = activation
+        self.in_channel = in_channel
+        self.out_channel = out_channel
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding                  # TODO Add padding
+        self.bias = bias                        # whether or not to add bias
         self.trainable = trainable
 
         # Initialize the kernel
-        # 这个Layer的输出是一个 [n, c_new, x_new, y_new] 的matrix
-
-        # 我们首先计算，CNN 后的新的图片大小
-        self.x_new = int((self.x - self.f + 2 * self.px) / self.sx + 1)
-        self.y_new = int((self.y - self.f + 2 * self.py) / self.sy + 1)
-
-        # w 是直接乘到原来的矩阵上面的，它的大小由 kernel 决定
-        # self.c 是为了和输入的矩阵的维度匹配
-        # self.f 就是我一共用了多少个filter，所以放在最外层。
-        self.w = Variable(np.random.normal(0, 1, (self.f, self.c, self.u, self.v)),
+        self.w = Variable(np.random.normal(0, 1, (self.out_channel, self.in_channel,
+                                                  self.kernel_size[0], self.kernel_size[1])),
                           trainable=trainable)
 
         # To be compatible with the previous setup,
         # the shape of b needs to have a 1 on the last dimension.
         # Therefore, we need here the reversed, and on later implementations,
         # We need to add a transpose to the addition.
-        self.b = Variable(np.random.normal(0, 1, list(reversed((1, self.f, self.x_new, self.y_new)))),
-                          trainable=trainable, param_share=True)
+
 
     def train_forward(self, X: Variable):
         '''
         :param X: X is a 4d tensor, [batch, channel, row, col]
-        # TODO 之后完善有channel摆放位置不同的情况。
+        # TODO add channel in different places
         :return:
         '''
+        self.n, _, self.x, self.y = X.shape
+        assert self.in_channel == X.shape[1]
+
+        # We first calculate the new matrix size.
+        self.x_new = int((self.x - self.kernel_size[0] + 2 * self.padding[0]) / self.stride[0] + 1)
+        self.y_new = int((self.y - self.kernel_size[1] + 2 * self.padding[1]) / self.stride[1] + 1)
 
         # Check 一下所有的维度是否正确
-        size = X.shape
-        self.n = size[0]
-        assert self.c == size[1]
-        assert self.x == size[2]
-        assert self.y == size[3]
 
-        output = X.conv2d(self.w,
-                          stride=(self.sx, self.sy),
-                          padding=(self.px, self.py))
-        output = self.activation(output)
+        output = X.conv2d(self.w, stride=self.stride, padding=self.padding)
+
+        # Add bias if necessary
+        if self.bias:
+            self.b = Variable(np.random.normal(0, 1, list(reversed((1, self.out_channel,
+                                                                    self.x_new, self.y_new)))),
+                              trainable=self.trainable, param_share=True)
+            output1 = output + self.b
+            return output1
+
         return output
 
-    def predict_forward(self, X):
-        return self.train_forward(X)
-
-    @property
-    def output_shape(self):
-        return self.f, self.x_new, self.y_new
+    def predict_forward(self, x):
+        return self.train_forward(x)
 
 
 class MaxPooling2D(common.Layer):
@@ -95,6 +85,7 @@ class MaxPooling2D(common.Layer):
 
         self.x_new = int((self.x - self.c + 2 * self.px) / self.sx + 1)
         self.y_new = int((self.y - self.c + 2 * self.py) / self.sy + 1)
+
 
         self.trainable = False
 

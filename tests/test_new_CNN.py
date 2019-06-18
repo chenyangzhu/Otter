@@ -9,32 +9,25 @@ from otter.layers.common import Dense, BatchNormalization
 from otter.optimizer import GradientDescent
 from otter.loss import sparse_categorical_crossentropy
 
-np.random.seed(2020)
+np.random.seed(2019)
 
 with Graph() as g:
-    n = 10
+    n = 1000
     c = 2
     x_len = 8
     y_len = 8
-    m = 10
+    m = 2
 
     x = Variable(np.random.normal(0, 1, (n, c, x_len, y_len)))
     y = Variable(np.random.randint(0, m-1, (n, 1)))
 
     layer1 = Conv2D(input_shape=(c, x_len, y_len),
-                    filters=3,
-                    kernel_size=(3, 3),
-                    strides=(1, 1),
+                    filters=5,
+                    kernel_size=(5, 5),
+                    strides=(3, 3),
                     padding=None,
-                    activation=relu,
+                    activation=sigmoid,
                     trainable=True)
-
-    # layer2 = MaxPooling2D(input_shape=layer1.output_shape,
-    #                       pool_size=(5, 5),
-    #                       strides=(1, 1),
-    #                       padding=None)
-
-    # layer2 = BatchNormalization()
 
     layer3 = Conv2D(input_shape=layer1.output_shape,
                     filters=3,
@@ -44,28 +37,33 @@ with Graph() as g:
                     activation=relu,
                     trainable=True)
 
-    layer4 = Flatten()
+    layer4 = BatchNormalization()
 
-    layer5 = Dense(output_shape=10,
-                   activation=softmax,
+    layer5 = Flatten()
+
+    layer6 = Dense(output_shape=10,
+                   activation=relu,
                    trainable=True)
-    optimizer = GradientDescent(0.5)
+
+    optimizer = GradientDescent(1)
 
     loss_list = []
 
-    for _ in range(100):
-        layer1_output = layer1.train_forward(x)
-        # layer2_output = layer2.train_forward(layer1_output)
-        layer3_output = layer3.train_forward(layer1_output)
+    for i in range(400):
+        a = layer1.train_forward(x)
+        c = layer3.train_forward(a)
 
-        layer4_output = layer4.train_forward(layer3_output)
-        layer5_output = layer5.train_forward(layer4_output)
-
-        loss = sparse_categorical_crossentropy(y, layer5_output)
+        d = layer4.train_forward(c)
+        e = layer5.train_forward(d)
+        f = layer6.train_forward(e)
+        # print(f)
+        g = softmax(f)
+        loss = sparse_categorical_crossentropy(y, g)
 
         g.update_gradient_with_optimizer(loss, optimizer)
-        print(layer1_output.gradient)
+        # print(a.gradient)
         loss_list.append(loss.value)
 
-plt.plot(loss_list)
-plt.show()
+        if i % 3 == 0:
+            plt.plot(loss_list)
+            plt.show()

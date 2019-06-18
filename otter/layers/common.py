@@ -97,17 +97,10 @@ class BatchNormalization(Layer):
         super().__init__()
 
     def train_forward(self, x: Variable):
-
-        # TODO Still problem here on average!!!!!!!!
         x_val = x.value
-
-        self.mean = x.average(axis=0)
-        self.mean.detach()
-
+        self.mean = Variable(np.average(x.value))
         self.var_inv = Variable(np.array(np.var(x_val))).inv()
-
         output = x.sub(self.mean).multiply(self.var_inv)
-
         return output
 
     def predict_forward(self, x: Variable):

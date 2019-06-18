@@ -17,8 +17,9 @@ def sparse_categorical_crossentropy(y: Variable, yhat: Variable):
     :return:
     """
 
-    sliced = yhat.slice(y.value, axis=1)
-
+    sliced = yhat.slice(y.value.reshape((len(y.value),)), axis=1)
+    # print("++++++++++sliced+++++++++++", sliced)
+    # print(sliced.log().sum())
     maxi = sliced.log().sum().neg()
 
     return maxi
