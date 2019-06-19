@@ -14,6 +14,12 @@ with otter.Graph() as graph:
   a = Variable(np.array([[10, 15], [4, 8], [1, 2]]))
   b = Variable(np.array([[1, 2], [4, 8], [2, 4]]))
 
-  c = a.add(b)
+  c = a + b
   graph.update_gradient(c)
 ```
+
+### Ways to prevent vanishing/exploding gradients
+
+- Gradient Clipping
+- Safe exp, by clipping values
+- safe inversion and safe log , by adding a small ε

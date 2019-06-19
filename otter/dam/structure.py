@@ -1,5 +1,6 @@
 import numpy as np
 VALUE_CLIPPING_THRESHOLD = 2e2
+EPSILON = 1e-2
 
 class Variable:
 
@@ -132,7 +133,7 @@ class Variable:
         self.lchild.gradient = np.multiply(self.gradient, self.value)
 
     def safe_inv(self):
-        return (self + Variable(np.ones(1) * 1e-6)).inv()
+        return (self + Variable(np.array(EPSILON))).inv()
 
     def inv(self):
 
@@ -265,7 +266,7 @@ class Variable:
             self.lchild.gradient = np.ones(shape) * self.gradient / shape[axis]
 
     def safe_log(self):
-        return (self + Variable(np.ones(1) * 1e-6)).log()
+        return (self + Variable(np.array(EPSILON))).log()
 
     def log(self):
         # self.value += 0.0001
