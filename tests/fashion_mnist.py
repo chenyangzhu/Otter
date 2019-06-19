@@ -39,12 +39,12 @@ def read_data():
 
 if __name__ == "__main__":
 
-    np.random.seed(2019)
+    np.random.seed(2030)
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
-    x_train = x_train[:2000]
-    y_train = y_train[:2000]
+    x_train = x_train[:10000]
+    y_train = y_train[:10000]
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                         out_channel=16,
                         kernel_size=(3, 3),
                         stride=(2, 2),
-                        activation=sigmoid,
+                        activation=relu,
                         bias=False)
 
         layer2 = Conv2D(in_channel=16,
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         layer3 = Flatten()
 
         layer4 = Dense(output_shape=64,
-                       activation=relu)
+                       activation=sigmoid)
         #
         # layer5 = Dense(output_shape=32,
         #                activation=sigmoid)
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         layer6 = Dense(output_shape=10,
                        activation=softmax)
 
-        optimizer = GradientDescent(0.1)
+        optimizer = GradientDescent(0.5)
 
         loss_list = []
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
             loss_list.append(loss.value)
 
-            if i % 10 == 0:
+            if i % 5 == 0:
                 plt.clf()
                 plt.plot(loss_list)
                 plt.show()

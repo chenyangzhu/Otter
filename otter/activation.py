@@ -53,11 +53,17 @@ def relu(x: Variable):
 
 def tanh(x: Variable):
     # TODO Solve OOM problem
-    M = np.max(x.value)
+    M = np.average(x.value)
+    print(np.max(x.value - M))
+    print(np.min(x.value - M))
+    # print(np.exp(x.value - M))
+    # print(np.exp(-x.value - M))
+    # print(np.exp(x.value - M))
+    # print(np.exp(-x.value - M))
     output_value = (np.exp(x.value - M) - np.exp(-x.value - M))/(np.exp(x.value - M) + np.exp(-x.value - M))
 
     output = Variable(output_value, lchild=x)
-    output.back_prop=output.back_tanh
+    output.back_prop = output.back_tanh
     output.tanh_grad_parser = {'M': M,
                                'xvalue': x.value}
     return output

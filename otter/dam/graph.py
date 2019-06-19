@@ -19,9 +19,10 @@ class Graph:
         # print(type(x))
 
         # Gradient Clipping
-        GRADIENT_CLIPPING_THRESHOLD = 1e4
+        GRADIENT_CLIPPING_THRESHOLD = 1e3
         mask = (x.gradient < GRADIENT_CLIPPING_THRESHOLD).astype(int)
-        contra_mask = (x.gradient > GRADIENT_CLIPPING_THRESHOLD).astype(int)
+        mask = np.multiply(mask, (x.gradient > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
+        contra_mask = 1 - mask
         x.gradient = np.multiply(mask, x.gradient) + contra_mask * GRADIENT_CLIPPING_THRESHOLD
 
         if x.back_prop is not None:

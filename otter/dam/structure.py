@@ -21,7 +21,7 @@ class Variable:
         # if dtype is None, we automatically generate dtype from x
         # Else we check if the declared datatype is the same as the input data x
         if dtype is None:
-            self.dtype = type(x)
+            self.dtype = x.dtype
         else:
             assert x.dtype == dtype
 
@@ -45,7 +45,7 @@ class Variable:
         self.back_prop = None
 
     def __str__(self):
-        return "otter.Variable: " + str(self.name) + " (" + self.value.__str__() + ")"
+        return "otter.Variable: " + str(self.name) + " " + str(self.dtype) + " (" + self.value.__str__() + ")"
 
     @property
     def shape(self):
