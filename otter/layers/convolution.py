@@ -95,7 +95,6 @@ class Conv2D(common.Layer):
                                 # We have to record, which one in the mapping matrix is from which w
                                 self.mapping.w2mapping.append([(filter_idx, channel_idx, ix, jx),
                                                                (mapping_old, mapping_new)])
-        # During later iterations, we don't have to calculate mapping at all.
         # We first need to reshape our x matrix
 
         input_image_flattened = X.reshape((self.n, self.old_length))
@@ -130,7 +129,6 @@ class MaxPooling2D(common.Layer):
 
         self.x_new = int((self.x - self.c + 2 * self.px) / self.sx + 1)
         self.y_new = int((self.y - self.c + 2 * self.py) / self.sy + 1)
-
 
         self.trainable = False
 

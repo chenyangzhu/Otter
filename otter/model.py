@@ -4,6 +4,23 @@ import numpy as np
 from otter.optimizer import StochasticGradientDescent
 
 
+class Model:
+    def __init__(self):
+        """
+        In init, we input layers here.
+        """
+        pass
+
+    def train_forward(self):
+        pass
+
+    def test_forward(self):
+        return self.train_forward()
+
+    def save_model(self, path):
+        return 0
+
+
 class Sequential:
     def __init__(self, layers):
         self.layers = layers
@@ -36,7 +53,6 @@ class Sequential:
 
         self.X = X
         self.y = y
-
         self.n = X.shape[0]
 
         # history
@@ -76,5 +92,6 @@ class Sequential:
 
     def predict(self, X):
         for each_layer in self.layers:
+
             X = each_layer.predict_forward(X)
         return X

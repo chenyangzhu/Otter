@@ -39,7 +39,7 @@ def read_data():
 
 if __name__ == "__main__":
 
-    np.random.seed(2030)
+    np.random.seed(2019)
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         layer6 = Dense(output_shape=10,
                        activation=softmax)
 
-        optimizer = GradientDescent(0.5)
+        optimizer = GradientDescent(1)
 
         loss_list = []
 
@@ -100,9 +100,6 @@ if __name__ == "__main__":
             loss = sparse_categorical_crossentropy(y_train, f)
 
             g.update_gradient_with_optimizer(loss, optimizer)
-
-            print(layer1.w.gradient)
-
             loss_list.append(loss.value)
 
             if i % 5 == 0:

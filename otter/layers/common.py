@@ -22,10 +22,10 @@ class Layer():
 class Dense(Layer):
     def __init__(self, output_shape, activation, trainable=True):
 
-        '''
+        """
         :param output_shape:   # of hidden units
         :param activation:    an activation function
-        '''
+        """
 
         super().__init__()
         # Normal initialization
