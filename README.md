@@ -15,7 +15,7 @@ with otter.Graph() as graph:
   b = Variable(np.array([[1, 2], [4, 8], [2, 4]]))
 
   c = a + b
-  graph.update_gradient(c)
+  c.back_propagation()
 ```
 
 ### Build a Deep Learning model from scratch
@@ -51,3 +51,8 @@ with Graph() as g:
 - Gradient Clipping
 - Safe exp, by clipping values
 - safe inversion and safe log , by adding a small ε
+
+### What's next
+- Flexible model structures
+- Faster computations
+- etc.

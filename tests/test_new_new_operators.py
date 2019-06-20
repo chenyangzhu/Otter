@@ -18,9 +18,8 @@ with Graph() as graph:
     e = c.dot(d.T())
     f = e.pow(2)
 
-
-    graph.update_gradient_with_optimizer(f, GradientDescent)
-
+    f.back_propagation()
+    # graph.update_gradient(f)
     print("a", a.gradient)
     print("b", b.gradient)
     print("c", c.gradient)

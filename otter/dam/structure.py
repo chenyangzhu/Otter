@@ -48,6 +48,23 @@ class Variable:
     def __str__(self):
         return "otter.Variable: " + str(self.name) + " " + str(self.dtype) + " (" + self.value.__str__() + ")"
 
+    '''
+    The next few functions enable auto-gradients
+    '''
+
+    def back_propagation(self):
+        self.update_gradient(self)
+
+    def update_gradient(self, x):
+        if x.back_prop is not None:
+            x.back_prop()
+
+        if x.lchild is not None:
+            self.update_gradient(x.lchild)
+
+        if x.rchild is not None:
+            self.update_gradient(x.rchild)
+
     @property
     def shape(self):
         return self.value.shape

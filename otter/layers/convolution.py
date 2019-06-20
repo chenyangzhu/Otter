@@ -1,11 +1,12 @@
 from otter.layers import common
-import numpy as np
 from otter.dam.structure import Variable
-
+from ..dam.parallel import iterate_list_with_parallel
+import numpy as np
 
 # CNN
 class Conv2D(common.Layer):
-    def __init__(self, in_channel, out_channel, kernel_size, activation, stride=(1, 1),
+    def __init__(self, in_channel, out_channel, kernel_size,
+                 activation, stride=(1, 1),
                  padding=(0, 0), bias=True, trainable=True):
         """
         Convolution Layer 2D
@@ -39,12 +40,17 @@ class Conv2D(common.Layer):
         # We need to add a transpose to the addition.
         self.initialize = True
 
+    def set_map(self, idx):
+        start_idx, end_idx = idx
+        for each in self.mapping.w2mapping[start_idx: end_idx]:
+            self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
+
     def train_forward(self, X: Variable):
-        '''
+        """
         :param X: X is a 4d tensor, [batch, channel, row, col]
         # TODO add channel in different places
         :return:
-        '''
+        """
 
         def idx_three2one(idx, shape):
             new_idx = idx[0] * np.prod(shape[1:]) + idx[1] * shape[2] + idx[2]
@@ -73,28 +79,45 @@ class Conv2D(common.Layer):
             self.b = Variable(np.random.normal(0, 1, list(reversed((1, self.out_channel,
                                                                     self.x_new, self.y_new)))),
                               trainable=self.trainable, param_share=True)
+
+            '''
+            Now we create a mapping.w2mapping, the mapping itself we only need it once for all. 
+            After we know the mapping, we can easily do the back-prop and forward-prop each time.
+            '''
+
+            self.mapping.w2mapping = []
+
+            # Logic 1, without sorting
+            for filter_idx in range(self.out_channel):
+                for i in range(self.x_new):
+                    for j in range(self.y_new):
+                        # Index for new matrix
+                        mapping_new = idx_three2one((filter_idx, i, j),
+                                                    (self.out_channel, self.x_new, self.y_new))
+                        x_start = int(i * self.stride[0])
+                        y_start = int(j * self.stride[1])
+                        for ix in range(self.kernel_size[0]):
+                            for jx in range(self.kernel_size[1]):
+                                for channel_idx in range(self.in_channel):
+                                    # Index for old matrix
+                                    mapping_old = idx_three2one((channel_idx, x_start + ix, y_start + jx),
+                                                                (self.in_channel, self.x, self.y))
+                                    # We have to record, which one in the mapping matrix is from which w
+                                    self.mapping.w2mapping.append([(filter_idx, channel_idx, ix, jx),
+                                                                   (mapping_old, mapping_new)])
+
+            # Logic 2 , with sorting on (mapping_old, mapping_new)
+
             self.initialize = False
 
-        # Building the mapping
-        self.mapping.w2mapping = []
-        for filter_idx in range(self.out_channel):
-            for i in range(self.x_new):
-                for j in range(self.y_new):
-                    # Index for new matrix
-                    mapping_new = idx_three2one((filter_idx, i, j),
-                                                (self.out_channel, self.x_new, self.y_new))
-                    x_start = int(i * self.stride[0])
-                    y_start = int(j * self.stride[1])
-                    for ix in range(self.kernel_size[0]):
-                        for jx in range(self.kernel_size[1]):
-                            for channel_idx in range(self.in_channel):
-                                # Index for old matrix
-                                mapping_old = idx_three2one((channel_idx, x_start + ix, y_start + jx),
-                                                            (self.in_channel, self.x, self.y))
-                                self.mapping.value[mapping_old, mapping_new] += self.w.value[filter_idx, channel_idx, ix, jx]
-                                # We have to record, which one in the mapping matrix is from which w
-                                self.mapping.w2mapping.append([(filter_idx, channel_idx, ix, jx),
-                                                               (mapping_old, mapping_new)])
+        # Apply the mapping
+
+        # Run parallel computing
+        # iterate_list_with_parallel(self.set_map, len(self.mapping.w2mapping), 1)
+        
+        for each in self.mapping.w2mapping:
+            self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
+
         # We first need to reshape our x matrix
 
         input_image_flattened = X.reshape((self.n, self.old_length))
@@ -114,13 +137,16 @@ class Conv2D(common.Layer):
 
 
 class MaxPooling2D(common.Layer):
-    def __init__(self, input_shape, pool_size, strides, padding):
+    def __init__(self, input_shape, pool_size,
+                 strides, padding):
+
         """
         :param input_shape:
         :param pool_size:
         :param strides:
         :param padding:
         """
+
         super().__init__()
         self.c, self.x, self.y = input_shape    #
         self.u, self.v = pool_size              #

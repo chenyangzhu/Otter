@@ -7,12 +7,15 @@ class Layer():
         pass
 
     def train_forward(self, X):
-
         pass
 
     def predict_forward(self, X):
 
         return self.train_forward(X)
+
+    def save_layer(self):
+        pass
+
 
     @property
     def params(self):
