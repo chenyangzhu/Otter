@@ -1,7 +1,4 @@
-from otter.dam.structure import *
 from otter.dam.graph import *
-from otter.activation import sigmoid
-
 
 with Graph() as graph:
 

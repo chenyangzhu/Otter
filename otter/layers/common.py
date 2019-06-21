@@ -1,6 +1,7 @@
 import numpy as np
 from ..dam.structure import Variable
-
+import json
+import os
 
 class Layer():
     def __init__(self):
@@ -13,8 +14,51 @@ class Layer():
 
         return self.train_forward(X)
 
-    def save_layer(self):
-        pass
+    def save_layer(self, path):
+        """save layer data into a file (e.g., ./layer1.json
+        the input path, must contains the target file that we want to write in.
+        This file should be specified in the upper save_model function.
+
+        Also notice that we will export *all* class params/variables of this instance.
+        """
+        result = self.__dict__
+        delete_list = []
+        # To create a delete_list is because during the following iteration,
+        # it's no callable.
+
+        # By iterating through all the results in the dictionary
+        for each_key in result.keys():
+
+            # Now, we need to turn all the Variable objects into a value list
+            if isinstance(result[each_key], Variable):
+                result[each_key] = result[each_key].value.tolist()
+
+            # We need to delete all the functions
+            if callable(result[each_key]):
+                # If it's a function, delete it
+                delete_list.append(each_key)
+
+        # Now we delete what we don't want and marked before:
+        for each in delete_list:
+            result.pop(each)
+
+        # Then we dump the results into a file
+        with open(path, 'w') as outfile:
+            json.dump(result, outfile)
+
+    def read_layer(self, path):
+        """Read layer data from a json file
+
+        1. Read the json file and transform to string
+        2. Parse json file using json package
+        3. set attribute
+        """
+        with open(path) as json_file:
+            data = json.load(json_file)
+            for each_key in data.keys():
+                # Set attribute
+                self.__setattr__(each_key, data[each_key])
+
 
 
     @property

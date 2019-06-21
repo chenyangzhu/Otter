@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 from otter.dam.structure import Variable
 from otter.dam.graph import Graph
-from otter.layers.convolution import MaxPooling2D, Conv2D, Flatten
-from otter.activation import softmax, sigmoid, relu, tanh
-from otter.layers.common import Dense, BatchNormalization
+from otter.layers.convolution import Conv2D, Flatten
+from otter.ops.activation import softmax, sigmoid, relu
+from otter.layers.common import Dense
 from otter.optimizer import GradientDescent
-from otter.loss import sparse_categorical_crossentropy
+from otter.ops.loss import sparse_categorical_crossentropy
 
 
 def read_data():
@@ -21,18 +21,18 @@ def read_data():
         paths.append('../dataset/fashion-mnist/' + files[i])
 
     with gzip.open(paths[0], 'rb') as lbpath:
-        y_train = np.frombuffer(lbpath.read(), np.uint8, offset=8)
+        y_train = np.frombuffer(lbpath.load(), np.uint8, offset=8)
 
     with gzip.open(paths[1], 'rb') as imgpath:
         x_train = np.frombuffer(
-            imgpath.read(), np.uint8, offset=16).reshape(len(y_train), 28, 28)
+            imgpath.load(), np.uint8, offset=16).reshape(len(y_train), 28, 28)
 
     with gzip.open(paths[2], 'rb') as lbpath:
-        y_test = np.frombuffer(lbpath.read(), np.uint8, offset=8)
+        y_test = np.frombuffer(lbpath.load(), np.uint8, offset=8)
 
     with gzip.open(paths[3], 'rb') as imgpath:
         x_test = np.frombuffer(
-            imgpath.read(), np.uint8, offset=16).reshape(len(y_test), 28, 28)
+            imgpath.load(), np.uint8, offset=16).reshape(len(y_test), 28, 28)
 
     return (x_train, y_train), (x_test, y_test)
 

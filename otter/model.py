@@ -1,6 +1,9 @@
 from otter.history import history_recorder
 from otter import Variable
+from otter.layers.common import Layer
 import numpy as np
+import os
+import json
 from otter.optimizer import StochasticGradientDescent
 
 
@@ -17,12 +20,36 @@ class Model:
     def test_forward(self):
         return self.train_forward()
 
-    def save_model(self, path):
-        return 0
+    def save(self, path='./tmp'):
+
+        # If the file does not exit, create this file
+        if not os.path.isdir(path):
+            os.mkdir(path)
+
+        variables = self.__dict__
+        number_of_layers = 0
+        for each in variables.keys():
+            # If layers[each] is a Layer object, we call and save it
+            if issubclass(variables[each].__class__, Layer):
+                variables[each].save_layer(path + '/layer'+str(number_of_layers)+'.json')
+                number_of_layers += 1
+        print(f"Model saved to {path}")
+
+    def load(self, path='./tmp'):
+        variables = self.__dict__
+        number_of_layers = 0
+        for each in variables.keys():
+            # If layers[each] is a Layer object, we call and save it
+            if issubclass(variables[each].__class__, Layer):
+                variables[each].read_layer(path + '/layer'+str(number_of_layers)+'.json')
+                number_of_layers += 1
+        print(f"Model loaded from {path}")
+        pass
 
 
-class Sequential:
+class Sequential(Model):
     def __init__(self, layers):
+        super().__init__()
         self.layers = layers
         self.compiled = False
 

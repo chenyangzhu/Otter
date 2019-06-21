@@ -9,8 +9,7 @@ class Conv2D(common.Layer):
     def __init__(self, in_channel, out_channel, kernel_size,
                  activation, stride=(1, 1),
                  padding=(0, 0), bias=True, data_format="NHWC", trainable=True):
-        """
-        Convolution Layer 2D
+        """ Convolution Layer 2D
         :param in_channel:      Int:    Number of input channels
         :param out_channel:     Int:    Number of output channels
         :param kernel_size:     Tuple:  kernel_size
@@ -18,7 +17,7 @@ class Conv2D(common.Layer):
         :param stride:          Tuple:  stride, default (1, 1)
         :param padding:         Tuple:  padding, default (0, 0)
         :param bias:            Bool:
-        :param data_format:     String: The default format is NHWC, o.w. we reshape it.
+        :param data_format:     String: The default format is NCHW, o.w. we reshape it.
         :param trainable:       Bool:
         """
 
@@ -29,6 +28,7 @@ class Conv2D(common.Layer):
         self.stride = stride
         self.padding = padding                  # TODO Add padding
         self.bias = bias                        # whether or not to add bias
+        self.data_format = data_format
         self.trainable = trainable
 
         # Initialize the kernel
@@ -42,10 +42,10 @@ class Conv2D(common.Layer):
         # We need to add a transpose to the addition.
         self.initialize = True
 
-    def set_map(self, idx):
-        start_idx, end_idx = idx
-        for each in self.mapping.w2mapping[start_idx: end_idx]:
-            self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
+    # def set_map(self, idx):
+    #     start_idx, end_idx = idx
+    #     for each in self.mapping.w2mapping[start_idx: end_idx]:
+    #         self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
 
     def train_forward(self, X: Variable):
         """

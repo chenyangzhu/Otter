@@ -109,9 +109,8 @@ class RNN(common.Layer):
 if __name__ == "__main__":
 
     from otter import Variable
-    from otter.loss import mean_squared_error
     from otter.dam.graph import Graph
-    from otter.activation import sigmoid, softmax
+    from otter.ops.activation import softmax
     from otter.optimizer import GradientDescent
 
     with Graph() as g:

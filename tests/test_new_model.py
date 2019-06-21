@@ -2,11 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from otter import Variable
-from otter.loss import mean_squared_error
+from otter.ops.loss import mean_squared_error
 from otter.dam.graph import Graph
-from otter.activation import sigmoid, relu
-from otter.layers.common import Dense, Dropout, BatchNormalization
-from otter.optimizer import GradientDescent, StochasticGradientDescent
+from otter.layers.common import Dense
+from otter.optimizer import GradientDescent
 from otter.model import Sequential
 np.random.seed(2019)
 

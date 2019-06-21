@@ -1,8 +1,8 @@
 import numpy as np
 from otter import Variable
-from otter.loss import mean_squared_error
+from otter.ops.loss import mean_squared_error
 from otter.dam.graph import Graph
-from otter.activation import sigmoid, softmax
+from otter.ops.activation import sigmoid, softmax
 
 with Graph() as g:
     a = Variable(np.array([[10, 15], [4, 8], [1, 2]]))

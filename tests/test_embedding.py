@@ -1,12 +1,7 @@
 import numpy as np
-from otter.layers.common import Layer
 from otter.dam.structure import Variable
 from otter.dam.graph import Graph
-from otter.activation import softmax
-from otter.loss import sparse_categorical_crossentropy
 from otter.layers.language import Embedding
-
-from sklearn.preprocessing import OneHotEncoder
 
 with Graph() as g:
     vocab_size = 100
