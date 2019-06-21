@@ -2,6 +2,7 @@ import numpy as np
 VALUE_CLIPPING_THRESHOLD = 2e2
 EPSILON = 1e-2
 
+
 class Variable:
 
     def __init__(self, x, dtype=None, lchild=None, rchild=None,
@@ -326,9 +327,6 @@ class Variable:
         return self.parent
 
     def back_slice(self):
-        # print("+++++++++++++++back_slice++++++++++++++++++")
-        # print(self.slice_grad_parser['mask'])
-        # print(np.multiply(self.slice_grad_parser['mask'], self.gradient))
         self.lchild.gradient = np.multiply(self.slice_grad_parser['mask'], self.gradient)
 
     def tanh(self):

@@ -7,15 +7,14 @@ a more efficient and more friendly way.
 
 ## Useful Features
 
-### Graph + Autogradient
+### Autogradient
 In Otter, you never need to do gradients yourself. As long as you have computed the forward propagation, Otter will automatically register all the calculation into a computation graph. It will then do the back propagation for your automatically with deep first graph search, as friendly as Python should have been.
 ```
-with otter.Graph() as graph:
-  a = Variable(np.array([[10, 15], [4, 8], [1, 2]]))
-  b = Variable(np.array([[1, 2], [4, 8], [2, 4]]))
+a = Variable(np.array([[10, 15], [4, 8], [1, 2]]))
+b = Variable(np.array([[1, 2], [4, 8], [2, 4]]))
 
-  c = a + b
-  c.back_propagation()
+c = a + b
+c.back_propagation()
 ```
 
 ### Build a Deep Learning model from scratch

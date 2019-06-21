@@ -3,11 +3,12 @@ from otter.dam.structure import Variable
 from ..dam.parallel import iterate_list_with_parallel
 import numpy as np
 
+
 # CNN
 class Conv2D(common.Layer):
     def __init__(self, in_channel, out_channel, kernel_size,
                  activation, stride=(1, 1),
-                 padding=(0, 0), bias=True, trainable=True):
+                 padding=(0, 0), bias=True, data_format="NHWC", trainable=True):
         """
         Convolution Layer 2D
         :param in_channel:      Int:    Number of input channels
@@ -17,6 +18,7 @@ class Conv2D(common.Layer):
         :param stride:          Tuple:  stride, default (1, 1)
         :param padding:         Tuple:  padding, default (0, 0)
         :param bias:            Bool:
+        :param data_format:     String: The default format is NHWC, o.w. we reshape it.
         :param trainable:       Bool:
         """
 
@@ -106,8 +108,7 @@ class Conv2D(common.Layer):
                                     self.mapping.w2mapping.append([(filter_idx, channel_idx, ix, jx),
                                                                    (mapping_old, mapping_new)])
 
-            # Logic 2 , with sorting on (mapping_old, mapping_new)
-
+            # Now we need to sort this list, using quick sort
             self.initialize = False
 
         # Apply the mapping
