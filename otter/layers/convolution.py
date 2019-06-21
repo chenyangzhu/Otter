@@ -47,7 +47,7 @@ class Conv2D(common.Layer):
     #     for each in self.mapping.w2mapping[start_idx: end_idx]:
     #         self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
 
-    def train_forward(self, X: Variable):
+    def forward(self, X: Variable):
         """
         :param X: X is a 4d tensor, [batch, channel, row, col]
         # TODO add channel in different places
@@ -133,8 +133,8 @@ class Conv2D(common.Layer):
 
         return self.activation(output)
 
-    def predict_forward(self, x):
-        return self.train_forward(x)
+    def predict(self, x):
+        return self.forward(x)
 
 
 class MaxPooling2D(common.Layer):
@@ -159,7 +159,7 @@ class MaxPooling2D(common.Layer):
 
         self.trainable = False
 
-    def train_forward(self, X):
+    def forward(self, X):
 
         # Check 一下所有的维度是否正确
         size = X.shape
@@ -216,7 +216,7 @@ class Flatten(common.Layer):
     def __init__(self):
         super().__init__()
 
-    def train_forward(self, X):
+    def forward(self, X):
         self.n, self.c, self.x, self.y = X.shape
         output = X.reshape((self.n, self.c * self.x * self.y))
         return output

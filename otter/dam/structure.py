@@ -66,6 +66,35 @@ class Variable:
         if x.rchild is not None:
             self.update_gradient(x.rchild)
 
+    def back_propagation_with_optimizer(self, optimizer):
+        self.update_gradient_with_optimizer(self, optimizer)
+
+    def update_gradient_with_optimizer(self, x, optimizer):
+        # Gradient Clipping
+        GRADIENT_CLIPPING_THRESHOLD = 1e3
+        mask = (x.gradient < GRADIENT_CLIPPING_THRESHOLD).astype(int)
+        mask = np.multiply(mask, (x.gradient > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
+        contra_mask = 1 - mask
+        x.gradient = np.multiply(mask, x.gradient) + contra_mask * GRADIENT_CLIPPING_THRESHOLD
+
+        if x.back_prop is not None:
+            # which means x is an input node
+            x.back_prop()
+
+        if x.trainable:
+            optimizer.update_once(x)
+
+        if x.lchild is not None:
+            self.update_gradient_with_optimizer(x.lchild, optimizer)
+
+        if x.rchild is not None:
+            self.update_gradient_with_optimizer(x.rchild, optimizer)
+
+    '''
+    The followings are two basic functions we provide to allow faster 
+    computations and extra abilities.
+    '''
+
     @property
     def shape(self):
         return self.value.shape

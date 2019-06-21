@@ -12,8 +12,8 @@ class One(Model):
         self.layer2 = Dense(10, softmax)
 
     def forward(self, x):
-        x = self.layer1.train_forward(x)
-        x = self.layer2.train_forward(x)
+        x = self.layer1.forward(x)
+        x = self.layer2.forward(x)
         return x
     #
     # def save(self, path):

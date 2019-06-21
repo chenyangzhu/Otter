@@ -13,6 +13,6 @@ with Graph() as g:
 
     x = Variable(np.random.randint(0, vocab_size-1, (data_len, max_len)))
 
-    embedded = emb.train_forward(x)
+    embedded = emb.forward(x)
 
     print(embedded)

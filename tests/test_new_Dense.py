@@ -26,8 +26,8 @@ with Graph() as g:
     loss_array = []
 
     for _ in range(1000):
-        a = layer1.train_forward(x)
-        b = layer2.train_forward(a)
+        a = layer1.forward(x)
+        b = layer2.forward(a)
         c = loss(y, b)
         print(layer1.w.gradient)
         g.update_gradient_with_optimizer(c, optimizer)

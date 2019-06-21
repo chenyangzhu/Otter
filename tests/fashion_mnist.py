@@ -13,7 +13,7 @@ from otter.ops.loss import sparse_categorical_crossentropy
 
 def read_data():
     files = [
-        'train-labels-idx1-ubyte.gz', 'train-images-idx3-ubyte.gz',
+        'forward-labels-idx1-ubyte.gz', 'forward-images-idx3-ubyte.gz',
         't10k-labels-idx1-ubyte.gz', 't10k-images-idx3-ubyte.gz'
     ]
     paths = []
@@ -92,11 +92,11 @@ if __name__ == "__main__":
 
         for i in range(4000):
             print(i)
-            a = layer1.train_forward(x_train)
-            b = layer2.train_forward(a)
-            c = layer3.train_forward(b)
-            d = layer4.train_forward(c)
-            f = layer6.train_forward(d)
+            a = layer1.forward(x_train)
+            b = layer2.forward(a)
+            c = layer3.forward(b)
+            d = layer4.forward(c)
+            f = layer6.forward(d)
             loss = sparse_categorical_crossentropy(y_train, f)
 
             g.update_gradient_with_optimizer(loss, optimizer)

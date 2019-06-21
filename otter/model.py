@@ -1,10 +1,7 @@
-from otter.history import history_recorder
 from otter import Variable
 from otter.layers.common import Layer
-import numpy as np
 import os
-import json
-from otter.optimizer import StochasticGradientDescent
+from tqdm import tqdm
 
 
 class Model:
@@ -14,11 +11,59 @@ class Model:
         """
         pass
 
-    def train_forward(self):
+    def compile(self, optimizer, loss, epoch, batch):
+        """
+        :param graph:               The corresponding graph
+        :param optimizer:           Optimizer
+        :param loss:                Loss
+        :param epoch:               # of iterations
+        :param batch:               batch size, if = -1, then no batch
+        :return:
+        """
+        self.optimizer = optimizer
+        self.loss = loss
+        self.epoch = epoch
+        self.batch = batch
+        self.compiled = True
+
+    def add_saver(self, saver):
+        """
+        In this function, we create a saver account and save the metrics.
+        Since savers are not mandatory for a model to work,
+        so we would do not include the add saver function into the compile
+        """
+        self.saver = saver
+
+    def forward(self, x):
+        """
+        This is a user-defined part, where user can define the forward
+        function themselves.
+        """
         pass
 
-    def test_forward(self):
-        return self.train_forward()
+    def predict(self, x):
+        return self.forward(x)
+
+    def fit(self, x, y):
+        # TODO This part is theoretically true
+        #  but has not been tested so far
+        iteration_number = int(x.shape[0] / self.batch)
+
+        # An epoch is an iteration to the entire dataset
+        for epoch_idx in (range(self.epoch)):
+            print(f"Doing the {epoch_idx}th epoch.")
+
+            for iteration_idx in tqdm(range(iteration_number)):
+                # We need to split the dataset by using index
+                start_idx = iteration_idx * self.batch
+                end_idx = (iteration_idx + 1) * self.batch
+
+                batch_x = Variable(x.value[start_idx:end_idx])
+                batch_y = Variable(y.value[start_idx:end_idx])
+
+                yhat = self.forward(batch_x)
+                l = self.loss(batch_y, yhat)
+                l.update_gradient_with_optimizer(self.optimizer)
 
     def save(self, path='./tmp'):
 
@@ -44,7 +89,6 @@ class Model:
                 variables[each].read_layer(path + '/layer'+str(number_of_layers)+'.json')
                 number_of_layers += 1
         print(f"Model loaded from {path}")
-        pass
 
 
 class Sequential(Model):
@@ -53,7 +97,7 @@ class Sequential(Model):
         self.layers = layers
         self.compiled = False
 
-    def compile(self, graph, optimizer, loss, epoch, batch):
+    def compile(self, optimizer, loss, epoch, batch):
         """
         :param graph:               The corresponding graph
         :param optimizer:           Optimizer
@@ -63,15 +107,11 @@ class Sequential(Model):
         :return:
         """
 
-        self.graph = graph
         self.optimizer = optimizer
         self.loss = loss
         self.epoch = epoch
         self.batch = batch
         self.compiled = True
-
-    def record(self, recorder_list):
-        self.recorder = history_recorder(recorder_list)
 
     def fit(self, X, y):
         # check if compiled
@@ -101,7 +141,7 @@ class Sequential(Model):
 
                 # run layers
                 for each_layer in self.layers:
-                    X = each_layer.train_forward(X)
+                    X = each_layer.forward(X)
 
                 output = self.loss(y=y, yhat=X)
 
@@ -120,5 +160,5 @@ class Sequential(Model):
     def predict(self, X):
         for each_layer in self.layers:
 
-            X = each_layer.predict_forward(X)
+            X = each_layer.predict(X)
         return X

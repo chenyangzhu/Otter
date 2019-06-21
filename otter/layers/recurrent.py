@@ -85,7 +85,7 @@ class RNN(common.Layer):
                                       output_units=self.output_units,
                                       activation=self.activation)
 
-    def train_forward(self, x):
+    def forward(self, x):
 
         '''
         :param x:
@@ -124,7 +124,7 @@ if __name__ == "__main__":
                      hidden_units=8, output_units=q,
                      activation=softmax, return_sequence=True, return_state=True)
 
-        output, hidden = layer2.train_forward(x)
+        output, hidden = layer2.forward(x)
         print(len(output))
         print(output[0].shape)
 

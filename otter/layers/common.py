@@ -7,12 +7,11 @@ class Layer():
     def __init__(self):
         pass
 
-    def train_forward(self, X):
+    def forward(self, x):
         pass
 
-    def predict_forward(self, X):
-
-        return self.train_forward(X)
+    def predict(self, x):
+        return self.forward(x)
 
     def save_layer(self, path):
         """save layer data into a file (e.g., ./layer1.json
@@ -81,7 +80,7 @@ class Dense(Layer):
         self.activation = activation
         self.initialize = True
 
-    def train_forward(self, x: Variable):
+    def forward(self, x: Variable):
         # Forward Propagation
         # print(x.shape)
         self.p = x.shape[1]  # input_tensor shape
@@ -97,8 +96,8 @@ class Dense(Layer):
         output = x.dot(self.w) + self.b.T()
         return self.activation(output)
 
-    def predict_forward(self, x: Variable):
-        return self.train_forward(x)
+    def predict(self, x: Variable):
+        return self.forward(x)
 
 
 class Dropout(Layer):
@@ -106,7 +105,7 @@ class Dropout(Layer):
         super().__init__()
         self.dropout_rate = dropout_rate
 
-    def train_forward(self, x: Variable):
+    def forward(self, x: Variable):
 
         """
         The key of dropout, is reduce the dropout process to
@@ -135,7 +134,7 @@ class Dropout(Layer):
 
         return output
 
-    def predict_forward(self, x: Variable):
+    def predict(self, x: Variable):
 
         return x
 
@@ -144,14 +143,14 @@ class BatchNormalization(Layer):
     def __init__(self):
         super().__init__()
 
-    def train_forward(self, x: Variable):
+    def forward(self, x: Variable):
         x_val = x.value
         self.mean = Variable(np.average(x.value))
         self.var_inv = Variable(np.array(np.var(x_val))).safe_inv()
         output = x.sub(self.mean).multiply(self.var_inv)
         return output
 
-    def predict_forward(self, x: Variable):
+    def predict(self, x: Variable):
 
         output = x.sub(self.mean).multiply(self.var_inv)
         return output
