@@ -1,31 +1,17 @@
-class history_recorder:
-    def __init__(self, recorders_list):
-        self.recorders_list = recorders_list
+from otter.model import Model
+
+
+class Saver:
+    def __init__(self, model, save_list):
+        """ This module saves some features of this model
+
+        args:
+            model:      the Model class
+            save_list:  a list containing all the metrics we want to save.
+
+        """
+        self.model = model
+        self.save_list = save_list
 
     def record(self):
         pass
-
-
-class Metrics:
-    def __init__(self):
-        pass
-
-    def record(self):
-        pass
-
-# TODO
-
-
-class categorical_accuracy(Metrics):
-    def __init__(self):
-        super().__init__()
-
-
-class sparse_categorical_accuracy(Metrics):
-    def __init__(self):
-        super().__init__()
-
-
-class loss(Metrics):
-    def __init__(self):
-        super().__init__()

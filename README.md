@@ -54,8 +54,10 @@ with Graph() as g:
 ### Other features
 
 - load and save models with json
+- Flexible Model Structures (beta)
 
 ### What's next
-- Flexible model structures
-- Faster computations
+- Optimization Methods including Adam, etc.
+// 过去的时候去n，回来的时候只回1，才可以加速
+- Faster computations on CNN
 - etc.

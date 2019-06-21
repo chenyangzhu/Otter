@@ -14,23 +14,27 @@ class Optimizer:
     def update_once(self, x: Variable):
         pass
 
-    def gradient_parser(self, grad, method, minibatch=-1):
-        '''
+    def gradient_parser(self, axis, grad, method, minibatch=-1):
+
+        """
         :param grad:
         :param method:      string  full, stochastic, minibatch
-        :param minibatch:   int     minibatch的数量
+        :param minibatch:   int     minibatch
         :return:            []      average gradient
-        '''
+        """
 
         n = grad.shape[0]
         if method == 'full':
-            # axis = 1, col-wise average
-            # axis = 0, row-wise average
+            # axis = 1, col-wise average, for param share b
+            # axis = 0, row-wise average, for normal gradients
 
-            n_grad = np.average(grad, axis=1).reshape((grad.shape[0], 1))
+            n_grad = np.average(grad, axis=axis).reshape((grad.shape[0], 1))
 
         elif method == 'stochastic':
-            n_grad = grad[:, np.random.randint(0, n, 1)]
+            if axis == 1:
+                n_grad = grad[:, np.random.randint(0, n, 1)]
+            elif axis == 0:
+                n_grad = grad[np.random.randint(0, n, 1), :]
 
         elif method == 'minibatch':
             if minibatch <= 0 or minibatch > n:
@@ -53,7 +57,7 @@ class GradientDescent(Optimizer):
     def update_once(self, x: Variable):
 
         if x.param_share:
-            gradient = self.gradient_parser(x.gradient, 'full', self.mini_batch)
+            gradient = self.gradient_parser(1, x.gradient, 'full', self.mini_batch)
         else:
             gradient = x.gradient
 
@@ -62,16 +66,18 @@ class GradientDescent(Optimizer):
 
 
 class StochasticGradientDescent(Optimizer):
-    #TODO, rewrite the SGD, to keep track of only one gradient.
+    """
+    In stochastic Gradient Descent,
+    we actually need to use gradient parsers for both param_share and not
+    share cases.
+    """
+
     def __init__(self, learning_rate):
         super().__init__()
         self.learning_rate = learning_rate
 
     def update_once(self, x: Variable):
 
-        if x.param_share:
-            gradient = self.gradient_parser(x.gradient, 'stochastic')
-        else:
-            gradient = x.gradient
+        gradient = self.gradient_parser(0, x.gradient, 'stochastic')
 
-        x.value -= self.learning_rate * gradient
+        x.value = x.value - self.learning_rate * gradient
