@@ -51,6 +51,11 @@ with Graph() as g:
 - Safe exp, by clipping values
 - safe inversion and safe log , by adding a small ε
 
+### Other features
+
+- load and save models with json
+- 
+
 ### What's next
 - Flexible model structures
 - Faster computations
