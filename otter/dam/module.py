@@ -1,6 +1,5 @@
 import functools
 import time
-from ..dam.structure import Variable
 
 def timer(func):
     """

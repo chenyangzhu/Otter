@@ -13,7 +13,7 @@ from otter.ops.loss import sparse_categorical_crossentropy
 
 def read_data():
     files = [
-        'forward-labels-idx1-ubyte.gz', 'forward-images-idx3-ubyte.gz',
+        'train-labels-idx1-ubyte.gz', 'train-images-idx3-ubyte.gz',
         't10k-labels-idx1-ubyte.gz', 't10k-images-idx3-ubyte.gz'
     ]
     paths = []
@@ -21,18 +21,18 @@ def read_data():
         paths.append('../dataset/fashion-mnist/' + files[i])
 
     with gzip.open(paths[0], 'rb') as lbpath:
-        y_train = np.frombuffer(lbpath.load(), np.uint8, offset=8)
+        y_train = np.frombuffer(lbpath.read(), np.uint8, offset=8)
 
     with gzip.open(paths[1], 'rb') as imgpath:
         x_train = np.frombuffer(
-            imgpath.load(), np.uint8, offset=16).reshape(len(y_train), 28, 28)
+            imgpath.read(), np.uint8, offset=16).reshape(len(y_train), 28, 28)
 
     with gzip.open(paths[2], 'rb') as lbpath:
-        y_test = np.frombuffer(lbpath.load(), np.uint8, offset=8)
+        y_test = np.frombuffer(lbpath.read(), np.uint8, offset=8)
 
     with gzip.open(paths[3], 'rb') as imgpath:
         x_test = np.frombuffer(
-            imgpath.load(), np.uint8, offset=16).reshape(len(y_test), 28, 28)
+            imgpath.read(), np.uint8, offset=16).reshape(len(y_test), 28, 28)
 
     return (x_train, y_train), (x_test, y_test)
 
@@ -43,8 +43,8 @@ if __name__ == "__main__":
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
-    x_train = x_train[:10000]
-    y_train = y_train[:10000]
+    x_train = x_train[:100]
+    y_train = y_train[:100]
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
         layer4 = Dense(output_shape=64,
                        activation=sigmoid)
-        #
+
         # layer5 = Dense(output_shape=32,
         #                activation=sigmoid)
 

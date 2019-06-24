@@ -1,4 +1,6 @@
 import numpy as np
+import time
+from otter.dam.module import timer
 VALUE_CLIPPING_THRESHOLD = 2e2
 EPSILON = 1e-2
 
@@ -431,7 +433,7 @@ class Variable:
         grad_self: grad_output * y.T
         grad_y:    self.T * grad_output
         """
-        self.parent = Variable(np.matmul(self.value, y.value),
+        self.parent = Variable(np.dot(self.value, y.value),
                                lchild=self, rchild=y)
         self.parent.dot_grad_parser = {"x": self.value,
                                        "y": y.value}
@@ -520,11 +522,12 @@ class Variable:
                         grad_x[image_idx, channel_idx][tuple(self.mapping[i, j])] = self.gradient[
                             image_idx, channel_idx, i, j]
         self.lchild.gradient = grad_x
-
+    @timer
     def back_mapping(self):
+        start = time.time()
         for each in self.w2mapping:
             self.lchild.gradient[each[0]] = self.gradient[each[1]]
-
+        print("mapping", time.time() - start)
     def conv2d(self, w, stride, padding):
         """
         Forward propagation of convolution layer

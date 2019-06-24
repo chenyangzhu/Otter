@@ -2,7 +2,9 @@ from otter.layers import common
 from otter.dam.structure import Variable
 from ..dam.parallel import iterate_list_with_parallel
 import numpy as np
-
+import time
+from otter.dam.module import timer
+from scipy import sparse
 
 # CNN
 class Conv2D(common.Layer):
@@ -47,12 +49,14 @@ class Conv2D(common.Layer):
     #     for each in self.mapping.w2mapping[start_idx: end_idx]:
     #         self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
 
+    @timer
     def forward(self, X: Variable):
         """
         :param X: X is a 4d tensor, [batch, channel, row, col]
         # TODO add channel in different places
         :return:
         """
+        print("starting convolution.")
 
         def idx_three2one(idx, shape):
             new_idx = idx[0] * np.prod(shape[1:]) + idx[1] * shape[2] + idx[2]
@@ -113,18 +117,24 @@ class Conv2D(common.Layer):
 
         # Apply the mapping
 
-        # Run parallel computing
-        # iterate_list_with_parallel(self.set_map, len(self.mapping.w2mapping), 1)
-        
+        start = time.time()
         for each in self.mapping.w2mapping:
             self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
-
+        print("forward, mapping", time.time() - start)
         # We first need to reshape our x matrix
 
+        start = time.time()
         input_image_flattened = X.reshape((self.n, self.old_length))
+        print("first reshape", time.time() - start)
+
+        start = time.time()
         new_image_flattened = input_image_flattened.dot(self.mapping)
+        print("dot product", time.time() - start)
+
+        start = time.time()
         output = new_image_flattened.reshape((self.n, self.out_channel,
                                               self.x_new, self.y_new))
+        print("last reshape", time.time() - start)
 
         # Add bias if necessary
         if self.bias:
