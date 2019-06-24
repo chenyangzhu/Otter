@@ -56,9 +56,9 @@ with Graph() as g:
 
 - load and save models with json
 - Flexible Model Structures (beta)
-
-### What's next
-- Optimization Methods including Adam, etc.
-// 过去的时候去n，回来的时候只回1，才可以加速
 - Faster computations on CNN
-- etc.
+- Optimizer: GD, SGD, Adam, RMSprop
+
+
+### TODO
+- change softmax function

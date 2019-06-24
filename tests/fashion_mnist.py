@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 from otter.dam.structure import Variable
 from otter.dam.graph import Graph
-from otter.layers.convolution import Conv2D, Flatten
+from otter.layers.convolution import Conv2D, Flatten, MaxPooling2D
 from otter.ops.activation import softmax, sigmoid, relu
 from otter.layers.common import Dense
-from otter.optimizer import GradientDescent
+from otter.optimizer import *
 from otter.ops.loss import *
 from otter.utils import *
 from otter.model import Model
@@ -43,12 +43,12 @@ def read_data():
 
 if __name__ == "__main__":
 
-    np.random.seed(2020)
+    np.random.seed(12354)
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
-    # x_train = x_train[:10000]
-    # y_train = y_train[:10000]
+    x_train = x_train[:20000]
+    y_train = y_train[:20000]
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
@@ -60,24 +60,23 @@ if __name__ == "__main__":
     x_train = x_train.reshape(n, c, x_dim, y_dim)
     y_train = y_train.reshape(n, m)
 
-    layer1 = Conv2D(in_channel=c,
-                    out_channel=16,
-                    kernel_size=(3, 3),
-                    stride=(2, 2),
-                    activation=relu,
-                    bias=False)
+    conv1 = Conv2D(out_channel=16,
+                   kernel_size=(5, 5),
+                   stride=(2, 2),
+                   activation=relu)
 
-    layer2 = Conv2D(in_channel=16,
-                    out_channel=8,
+    pooling1 = MaxPooling2D(kernel_size=(3, 3),
+                            stride=(2, 2))
+
+    layer2 = Conv2D(out_channel=8,
                     kernel_size=(3, 3),
                     stride=(2, 2),
-                    activation=relu,
-                    bias=False)
+                    activation=relu)
 
     layer3 = Flatten()
 
     layer4 = Dense(output_shape=32,
-                   activation=sigmoid)
+                   activation=relu)
 
     # layer5 = Dense(output_shape=32,
     #                activation=sigmoid)
@@ -85,20 +84,19 @@ if __name__ == "__main__":
     layer6 = Dense(output_shape=10,
                    activation=softmax)
 
-    optimizer = GradientDescent(0.3)
+    optimizer = GradientDescent(0.8)
 
     loss_list = []
     acc_list = []
     g = Graph()
 
     iteration = 1000
-    batch_size = 512
+    batch_size = 1024
     total_epoch = int(n / batch_size)
 
     for it_idx in range(iteration):
         print(f"The {it_idx}th iteration.")
         for epoch in tqdm(range(total_epoch)):
-        # for epoch in range(total_epoch):
 
             x = x_train[epoch*batch_size: (epoch+1)*batch_size]
             y = y_train[epoch*batch_size: (epoch+1)*batch_size]
@@ -106,21 +104,24 @@ if __name__ == "__main__":
             x = Variable(x)
             y = Variable(y)
 
-            a = layer1.forward(x)
+            a = conv1.forward(x)
             b = layer2.forward(a)
             c = layer3.forward(b)
             d = layer4.forward(c)
             f = layer6.forward(d)
+
             loss = sparse_categorical_crossentropy(y, f)
             acc = sparse_categorical_accuracy(y, f)
 
             g.update_gradient_with_optimizer(loss, optimizer)
-
+            print(conv1.w)
             loss_list.append(loss.value)
             acc_list.append(acc)
             print(f" acc:{acc}, loss:{loss.value}")
 
-        if it_idx % 20 == 0:
-            plt.clf()
-            plt.plot(loss_list)
-            plt.show()
+            if epoch % 9 == 0:
+                plt.clf()
+                plt.plot(loss_list)
+                plt.show()
+                plt.plot(acc_list)
+                plt.show()

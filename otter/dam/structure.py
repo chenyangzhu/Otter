@@ -38,6 +38,8 @@ class Variable:
         self.name = name
         self.back_prop = None
 
+        # The variable is utilized to take notice of
+        self.first_optimize = True
         '''
         The back_prop function is what we use to do back_propagation
         The function only exists when the Variable is derived from
@@ -498,6 +500,11 @@ class Variable:
     """
 
     def back_softmax(self):
+        # First create the eye matrix
+        n, m = self.shape
+
+        eye = self.value * np.eye(m)
+
         self.lchild.gradient = np.multiply(self.value * (1 - self.value),
                                            self.gradient)
 

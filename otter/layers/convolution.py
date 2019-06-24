@@ -9,7 +9,7 @@ from scipy import sparse
 
 # CNN
 class Conv2D(common.Layer):
-    def __init__(self, in_channel, out_channel, kernel_size,
+    def __init__(self, out_channel, kernel_size,
                  activation, stride=(1, 1),
                  padding=(0, 0), bias=True, data_format="NHWC", trainable=True):
         """ Convolution Layer 2D
@@ -25,7 +25,6 @@ class Conv2D(common.Layer):
         """
 
         super().__init__()
-        self.in_channel = in_channel
         self.out_channel = out_channel
         self.kernel_size = kernel_size
         self.stride = stride
@@ -34,10 +33,6 @@ class Conv2D(common.Layer):
         self.data_format = data_format
         self.trainable = trainable
 
-        # Initialize the kernel
-        self.w = Variable(np.random.normal(0, 1, (self.out_channel, self.in_channel,
-                                                  self.kernel_size[0], self.kernel_size[1])),
-                          trainable=trainable)
         self.activation = activation
         # To be compatible with the previous setup,
         # the shape of b needs to have a 1 on the last dimension.
@@ -65,8 +60,7 @@ class Conv2D(common.Layer):
 
         # Notice that we only need to calculate mapping once for all epochs
         if self.initialize:
-            self.n, _, self.x, self.y = X.shape
-            assert self.in_channel == X.shape[1]
+            self.n, self.in_channel, self.x, self.y = X.shape
 
             # We first calculate the new matrix size.
             self.x_new = int((self.x - self.kernel_size[0] + 2 * self.padding[0]) / self.stride[0] + 1)
@@ -79,8 +73,12 @@ class Conv2D(common.Layer):
             # Because w has changed within each iteration
             # On the other hand, we have to keep w changing at the same time.
             # We only need to initialize b once, with the knowledge of xnew and ynew
-            self.b = Variable(np.random.normal(0, 1, list(reversed((1, self.out_channel,
-                                                                    self.x_new, self.y_new)))),
+            # Initialize the kernel
+            self.w = Variable(np.random.normal(0, 1, (self.out_channel, self.in_channel,
+                                                      self.kernel_size[0], self.kernel_size[1])),
+                              trainable=self.trainable)
+
+            self.b = Variable(np.random.normal(0, 1, (1, self.out_channel, self.x_new, self.y_new)),
                               trainable=self.trainable, param_share=True)
 
             '''
@@ -141,58 +139,45 @@ class Conv2D(common.Layer):
 
 
 class MaxPooling2D(common.Layer):
-    def __init__(self, input_shape, pool_size,
-                 strides, padding):
-
-        """
-        :param input_shape:
-        :param pool_size:
-        :param strides:
-        :param padding:
-        """
+    def __init__(self, kernel_size, stride, padding=(0, 0)):
 
         super().__init__()
-        self.c, self.x, self.y = input_shape    #
-        self.u, self.v = pool_size              #
-        self.sx, self.sy = strides              #
-        self.px = self.py = 0                   # TODO 有了padding后，改为padding
-
-        self.x_new = int((self.x - self.c + 2 * self.px) / self.sx + 1)
-        self.y_new = int((self.y - self.c + 2 * self.py) / self.sy + 1)
-
-        self.trainable = False
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding                  # TODO Add padding
+        self.initialize = True
 
     def forward(self, X):
 
-        # Check 一下所有的维度是否正确
-        size = X.shape
-        self.n = size[0]
-        assert self.c == size[1]
-        assert self.x == size[2]
-        assert self.y == size[3]
+        if self.initialize:
+            size = X.shape
+            self.n = size[0]
+            self.x = size[2]
+            self.y = size[3]
+            self.in_channel = size[1]
 
-        # 首先 生成新的那个矩阵，同样是 [batch, c, x_new, y_new] 4D
-        output = Variable(np.zeros((self.n, self.c, self.x_new, self.y_new)),
+            self.x_new = int((self.x - self.kernel_size[0] + 2 * self.padding[0]) / self.stride[0] + 1)
+            self.y_new = int((self.y - self.kernel_size[1] + 2 * self.padding[1]) / self.stride[1] + 1)
+
+            self.initialize = True
+
+        # Generate the new matrix
+        output = Variable(np.zeros((self.n, self.in_channel, self.x_new, self.y_new)),
                           lchild=X)
 
-        # Mapping 的作用是记录最大值所在的位置
-        # 当我们在做back prop的时候，就直接使用这个mapping，找到原来的位置，这样我们就可以直接把gradient 填充到原来的大矩阵里了
-        # mapping的大小，是pool后的小矩阵的大小，不包括n。最后的2用来存储坐标。
-        # gradient 的大小，是原来矩阵的大小。
+        output.mapping = np.zeros((self.n, self.in_channel, self.x_new, self.y_new, 2))
 
-        output.mapping = np.zeros((self.n, self.c, self.x_new, self.y_new, 2))
-
-        output.size = [self.n, self.c, self.x_new, self.y_new]
+        output.size = [self.n, self.in_channel, self.x_new, self.y_new]
 
         for image_idx, image in enumerate(X.value):
-            for channel_idx in range(self.c):
+            for channel_idx in range(self.in_channel):
                 for i in range(self.x_new):
                     for j in range(self.y_new):
 
-                        x_start = int(i * self.sx)
-                        x_end = int(x_start + self.u)
-                        y_start = int(j * self.sy)
-                        y_end = int(y_start + self.v)
+                        x_start = int(i * self.stride[0])
+                        x_end = int(x_start + self.kernel_size[0])
+                        y_start = int(j * self.stride[1])
+                        y_end = int(y_start + self.kernel_size[1])
 
                         # Forward-prop
                         clip = image[channel_idx, x_start: x_end, y_start: y_end]
@@ -212,7 +197,7 @@ class MaxPooling2D(common.Layer):
 
     @property
     def output_shape(self):
-        return self.c, self.x_new, self.y_new
+        return self.in_channel, self.x_new, self.y_new
 
 
 class Flatten(common.Layer):

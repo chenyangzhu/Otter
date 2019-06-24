@@ -88,12 +88,12 @@ class Dense(Layer):
         if self.initialize:
             self.w = Variable(np.random.normal(0, 1, (self.p, self.m)),
                               trainable=self.trainable, name='Dense_w')
-            self.b = Variable(np.random.normal(0, 1, (self.m, 1)),
+            self.b = Variable(np.random.normal(0, 1, (1, self.m)),
                               trainable=self.trainable, param_share=True,
                               name='Dense_b')
             self.initialize = False
 
-        output = x.dot(self.w) + self.b.T()
+        output = x.dot(self.w) + self.b
         return self.activation(output)
 
     def predict(self, x: Variable):
