@@ -9,7 +9,7 @@ from otter.ops.activation import softmax, sigmoid, relu
 from otter.layers.common import Dense
 from otter.optimizer import GradientDescent
 from otter.ops.loss import sparse_categorical_crossentropy
-
+from otter.utils import *
 
 def read_data():
     files = [
@@ -39,7 +39,7 @@ def read_data():
 
 if __name__ == "__main__":
 
-    np.random.seed(2019)
+    np.random.seed(2020)
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
@@ -59,50 +59,50 @@ if __name__ == "__main__":
     x_train = Variable(x_train)
     y_train = Variable(y_train)
 
-    with Graph() as g:
+    layer1 = Conv2D(in_channel=c,
+                    out_channel=12,
+                    kernel_size=(3, 3),
+                    stride=(2, 2),
+                    activation=sigmoid,
+                    bias=False)
 
-        layer1 = Conv2D(in_channel=c,
-                        out_channel=16,
-                        kernel_size=(3, 3),
-                        stride=(2, 2),
-                        activation=relu,
-                        bias=False)
+    layer2 = Conv2D(in_channel=12,
+                    out_channel=8,
+                    kernel_size=(3, 3),
+                    stride=(2, 2),
+                    activation=sigmoid,
+                    bias=False)
 
-        layer2 = Conv2D(in_channel=16,
-                        out_channel=8,
-                        kernel_size=(3, 3),
-                        stride=(2, 2),
-                        activation=relu,
-                        bias=False)
+    layer3 = Flatten()
 
-        layer3 = Flatten()
+    layer4 = Dense(output_shape=64,
+                   activation=sigmoid)
 
-        layer4 = Dense(output_shape=64,
-                       activation=sigmoid)
+    # layer5 = Dense(output_shape=32,
+    #                activation=sigmoid)
 
-        # layer5 = Dense(output_shape=32,
-        #                activation=sigmoid)
+    layer6 = Dense(output_shape=10,
+                   activation=softmax)
 
-        layer6 = Dense(output_shape=10,
-                       activation=softmax)
+    optimizer = GradientDescent(0.5)
 
-        optimizer = GradientDescent(1)
+    loss_list = []
+    g = Graph()
 
-        loss_list = []
+    for i in range(4000):
+        print(i)
+        a = layer1.forward(x_train)
+        b = layer2.forward(a)
+        c = layer3.forward(b)
+        d = layer4.forward(c)
+        f = layer6.forward(d)
+        loss = sparse_categorical_crossentropy(y_train, f)
 
-        for i in range(4000):
-            print(i)
-            a = layer1.forward(x_train)
-            b = layer2.forward(a)
-            c = layer3.forward(b)
-            d = layer4.forward(c)
-            f = layer6.forward(d)
-            loss = sparse_categorical_crossentropy(y_train, f)
+        g.update_gradient_with_optimizer(loss, optimizer)
 
-            g.update_gradient_with_optimizer(loss, optimizer)
-            loss_list.append(loss.value)
+        loss_list.append(loss.value)
 
-            if i % 5 == 0:
-                plt.clf()
-                plt.plot(loss_list)
-                plt.show()
+        if i % 5 == 0:
+            plt.clf()
+            plt.plot(loss_list)
+            plt.show()

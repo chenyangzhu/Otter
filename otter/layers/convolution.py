@@ -6,6 +6,7 @@ import time
 from otter.dam.module import timer
 from scipy import sparse
 
+
 # CNN
 class Conv2D(common.Layer):
     def __init__(self, in_channel, out_channel, kernel_size,
@@ -49,14 +50,14 @@ class Conv2D(common.Layer):
     #     for each in self.mapping.w2mapping[start_idx: end_idx]:
     #         self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
 
-    @timer
+    # @timer
     def forward(self, X: Variable):
         """
         :param X: X is a 4d tensor, [batch, channel, row, col]
         # TODO add channel in different places
         :return:
         """
-        print("starting convolution.")
+        # print("starting convolution.")
 
         def idx_three2one(idx, shape):
             new_idx = idx[0] * np.prod(shape[1:]) + idx[1] * shape[2] + idx[2]
@@ -77,21 +78,17 @@ class Conv2D(common.Layer):
             # The thing about mapping is that we have to calculate the mapping during each iteration,
             # Because w has changed within each iteration
             # On the other hand, we have to keep w changing at the same time.
-            self.mapping = Variable(np.zeros((self.old_length, self.new_length)),
-                                    lchild=self.w)
-            self.mapping.back_prop = self.mapping.back_mapping
-
             # We only need to initialize b once, with the knowledge of xnew and ynew
             self.b = Variable(np.random.normal(0, 1, list(reversed((1, self.out_channel,
                                                                     self.x_new, self.y_new)))),
                               trainable=self.trainable, param_share=True)
 
             '''
-            Now we create a mapping.w2mapping, the mapping itself we only need it once for all. 
+            Now we create a w2mapping, the mapping itself we only need it once for all. 
             After we know the mapping, we can easily do the back-prop and forward-prop each time.
             '''
 
-            self.mapping.w2mapping = []
+            self.w2mapping = []
 
             # Logic 1, without sorting
             for filter_idx in range(self.out_channel):
@@ -109,32 +106,28 @@ class Conv2D(common.Layer):
                                     mapping_old = idx_three2one((channel_idx, x_start + ix, y_start + jx),
                                                                 (self.in_channel, self.x, self.y))
                                     # We have to record, which one in the mapping matrix is from which w
-                                    self.mapping.w2mapping.append([(filter_idx, channel_idx, ix, jx),
+                                    self.w2mapping.append([(filter_idx, channel_idx, ix, jx),
                                                                    (mapping_old, mapping_new)])
 
             # Now we need to sort this list, using quick sort
             self.initialize = False
 
         # Apply the mapping
+        #
+        # start = time.time()
+        # for each in self.mapping.w2mapping:
+        #     self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
+        # print("forward, mapping", time.time() - start)
+        # # We first need to reshape our x matrix
 
-        start = time.time()
-        for each in self.mapping.w2mapping:
-            self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
-        print("forward, mapping", time.time() - start)
-        # We first need to reshape our x matrix
-
-        start = time.time()
         input_image_flattened = X.reshape((self.n, self.old_length))
-        print("first reshape", time.time() - start)
 
-        start = time.time()
-        new_image_flattened = input_image_flattened.dot(self.mapping)
-        print("dot product", time.time() - start)
+        new_image_flattened = input_image_flattened.sparse_dot_with_mapping(self.w, self.w2mapping,
+                                                                            self.old_length,
+                                                                            self.new_length)
 
-        start = time.time()
         output = new_image_flattened.reshape((self.n, self.out_channel,
                                               self.x_new, self.y_new))
-        print("last reshape", time.time() - start)
 
         # Add bias if necessary
         if self.bias:

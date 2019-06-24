@@ -1,5 +1,6 @@
 # from sklearn.preprocessing import OneHotEncoder
 import numpy as np
+from otter.dam.structure import Variable
 
 #
 # def int2onehot(vocab_size, x):
@@ -29,8 +30,5 @@ def last_dim_one_hot(x, vocab_size):
 
     return reshape_back
 
-
-if __name__ == "__main__":
-
-    x = np.array([np.arange(10), np.arange(10)]).reshape((10, 2, 1))
-    print(last_dim_one_hot(x, 10))
+def l2norm(x):
+    return np.sum(x ** 2)
