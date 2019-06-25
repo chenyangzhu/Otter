@@ -1,6 +1,7 @@
 from otter.layers import common
 import numpy as np
 from otter.dam.structure import Variable
+from otter.ops.activation import tanh
 
 
 # RNN
@@ -28,9 +29,9 @@ class SimpleRNNCell():
         # Initialize all params
         self.u = Variable(np.random.normal(0, 1, (self.p, self.hidden_units)), trainable=True)
         self.w = Variable(np.random.normal(0, 1, (self.hidden_units, self.hidden_units)), trainable=True)
-        self.b = Variable(np.random.normal(0, 1, (self.hidden_units, 1)),
+        self.b = Variable(np.random.normal(0, 1, (1, self.hidden_units)),
                           trainable=True, param_share=True)
-        self.c = Variable(np.random.normal(0, 1, (self.output_units, 1)),
+        self.c = Variable(np.random.normal(0, 1, (1, self.output_units)),
                           trainable=True, param_share=True)
         self.v = Variable(np.random.normal(0, 1, (self.hidden_units, self.output_units)), trainable=True)
 
@@ -41,15 +42,16 @@ class SimpleRNNCell():
         :param h:
         :return:
         """
+
         if h is None:
             # In the first RNNcell, we don't have any hidden layers, so we initialize one
             h = Variable(np.random.normal(0, 1, (x.shape[0], self.hidden_units)))
 
         xu = x.dot(self.u)
         hw = h.dot(self.w)
-        self.a = xu.add(hw).add(self.b.T())
-        self.h = self.a.tanh()
-        self.o = self.h.dot(self.v).add(self.c.T())
+        self.a = xu + hw + self.b
+        self.h = tanh(self.a)
+        self.o = self.h.dot(self.v) + self.c
         y = self.activation(self.o)
         return y, self.h
 

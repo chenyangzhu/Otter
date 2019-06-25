@@ -13,6 +13,7 @@ from otter.utils import *
 from otter.model import Model
 
 from tqdm import tqdm
+import tensorflow as tf
 
 
 def read_data():
@@ -47,8 +48,8 @@ if __name__ == "__main__":
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
-    x_train = x_train[:20000]
-    y_train = y_train[:20000]
+    x_train = x_train[2000:3000]
+    y_train = y_train[2000:3000]
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
@@ -91,15 +92,15 @@ if __name__ == "__main__":
     g = Graph()
 
     iteration = 1000
-    batch_size = 1024
+    batch_size = 64
     total_epoch = int(n / batch_size)
 
     for it_idx in range(iteration):
         print(f"The {it_idx}th iteration.")
         for epoch in tqdm(range(total_epoch)):
 
-            x = x_train[epoch*batch_size: (epoch+1)*batch_size]
-            y = y_train[epoch*batch_size: (epoch+1)*batch_size]
+            x = x_train[epoch*batch_size: (epoch+1) * batch_size]
+            y = y_train[epoch*batch_size: (epoch+1) * batch_size]
 
             x = Variable(x)
             y = Variable(y)
@@ -114,10 +115,13 @@ if __name__ == "__main__":
             acc = sparse_categorical_accuracy(y, f)
 
             g.update_gradient_with_optimizer(loss, optimizer)
-            print(conv1.w)
             loss_list.append(loss.value)
             acc_list.append(acc)
+
             print(f" acc:{acc}, loss:{loss.value}")
+            # print(conv1.w.gradient)
+            print(f.gradient)
+            print(f)
 
             if epoch % 9 == 0:
                 plt.clf()

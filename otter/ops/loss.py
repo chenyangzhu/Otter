@@ -18,16 +18,19 @@ def sparse_categorical_crossentropy(y: Variable, yhat: Variable):
     """
 
     sliced = yhat.slice(y.value.reshape((len(y.value),)), axis=1)
+    print(sliced.safe_log())
     maxi = sliced.log().average().neg()
 
     return maxi
 
 
 def sparse_categorical_accuracy(y: Variable, yhat: Variable):
+
     """
     Notice that this function is not differentiable
     so the return is not a Variable, but only a float number
     """
+
     argmax_y = np.argmax(yhat.value, axis=1)
     long_y = y.reshape((y.shape[0],)).value
 

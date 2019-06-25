@@ -23,9 +23,7 @@ def softmax(x: Variable, axis=0):
     # in dam.structure.Variable
     # print(x.value)
     M = x.maximum()
-    # print(M)
     small_x = x - M
-    # print(small_x)
     exp_small_x = small_x.safe_exp().value
 
     '''
@@ -45,7 +43,6 @@ def softmax(x: Variable, axis=0):
 def relu(x: Variable):
 
     mapping = Variable((x.value > 0).astype(int))
-
     output = x.multiply(mapping)
 
     return output
@@ -61,7 +58,6 @@ def tanh(x: Variable):
     # print(np.exp(x.value - M))
     # print(np.exp(-x.value - M))
     output_value = (np.exp(x.value - M) - np.exp(-x.value - M))/(np.exp(x.value - M) + np.exp(-x.value - M))
-
     output = Variable(output_value, lchild=x)
     output.back_prop = output.back_tanh
     output.tanh_grad_parser = {'M': M,

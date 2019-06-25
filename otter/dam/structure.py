@@ -1,8 +1,5 @@
 import numpy as np
-import time
-from otter.dam.module import timer
-VALUE_CLIPPING_THRESHOLD = 2e2
-EPSILON = 1e-2
+from otter._hyperparam import *
 
 
 class Variable:
@@ -40,6 +37,7 @@ class Variable:
 
         # The variable is utilized to take notice of
         self.first_optimize = True
+
         '''
         The back_prop function is what we use to do back_propagation
         The function only exists when the Variable is derived from
@@ -219,7 +217,7 @@ class Variable:
         if axis is not None:
             '''
             When axis is not None, by default the sum function in numpy will return
-            a shape probabily (1,) for 2-dim matrix. This is true, because all vectors should be a column vector.
+            a shape probably (1,) for 2-dim matrix. This is true, because all vectors should be a column vector.
             
             We'll be good in forward propagation, so we will leave the shape unchanged.
             However, this will be very dangerous for later back-prop, so we need to reshape
@@ -355,6 +353,7 @@ class Variable:
         elif axis == 1:
             output = self.value[np.arange(self.shape[0]), index].reshape((self.shape[0], 1))
             mask[np.arange(self.shape[0]), index] = 1
+            print(mask)
             # print(index)
 
         self.parent = Variable(output, lchild=self)
@@ -503,15 +502,15 @@ class Variable:
         # First create the eye matrix
         n, m = self.shape
 
-        eye = self.value * np.eye(m)
+        eyed = self.value.reshape(n, m, 1) * np.eye(m)
 
-        self.lchild.gradient = np.multiply(self.value * (1 - self.value),
-                                           self.gradient)
+        ones = self.value.reshape(n, m, 1) * np.ones(m)
+        inverse_ones = self.value.reshape(n, 1, m) * np.ones((m, m))
 
-    # def back_tanh(self):
-    #     M = self.tanh_grad_parser['M']
-    #     xvalue = self.tanh_grad_parser['xvalue']
-    #     self.lchild.gradient = (np.exp(xvalue-M) + np.exp(-xvalue - M) - np.exp(-M))/(np.exp(xvalue-M) - np.exp(-xvalue-M))
+        ds = eyed - np.multiply(ones, inverse_ones)
+        avg_ds = np.average(ds, axis=0)
+
+        self.lchild.gradient = np.matmul(self.gradient, avg_ds)
 
     """
     Layers
