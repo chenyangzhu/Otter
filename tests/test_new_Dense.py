@@ -20,12 +20,12 @@ with Graph() as g:
 
     layer1 = Dense(output_shape=10, activation=sigmoid)
     layer2 = Dense(output_shape=m, activation=sigmoid)
-    optimizer = StochasticGradientDescent(0.8)
+    optimizer = GradientDescent(0.8)
     loss = mean_squared_error
 
     loss_array = []
 
-    for i in range(500):
+    for i in range(300):
         if i % 50 == 0:
             print(i)
         a = layer1.forward(x)

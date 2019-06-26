@@ -18,8 +18,7 @@ def sparse_categorical_crossentropy(y: Variable, yhat: Variable):
     """
 
     sliced = yhat.slice(y.value.reshape((len(y.value),)), axis=1)
-    print(sliced.safe_log())
-    maxi = sliced.log().average().neg()
+    maxi = sliced.safe_log().average().neg()
 
     return maxi
 

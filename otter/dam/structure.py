@@ -1,5 +1,6 @@
 import numpy as np
 from otter._hyperparam import *
+import otter
 
 
 class Variable:
@@ -50,6 +51,50 @@ class Variable:
 
     def __str__(self):
         return "otter.Variable: " + str(self.name) + " " + str(self.dtype) + " (" + self.value.__str__() + ")"
+
+    #
+    # def gradient_parser(self, grad, method, minibatch=-1):
+    #
+    #     """
+    #     :param grad:
+    #     :param method:      string  full, stochastic, minibatch
+    #     :param minibatch:   int     minibatch
+    #     :return:            []      average gradient
+    #     """
+    #
+    #     n = grad.shape[0]
+    #     if method == 'full':
+    #         # axis = 1, col-wise average, for param share b
+    #         # axis = 0, row-wise average, for normal gradients
+    #         n_grad = np.average(grad, axis=0)
+    #
+    #     elif method == 'stochastic':
+    #         n_grad = grad[:, np.random.randint(0, n, 1)]
+    #
+    #     elif method == 'minibatch':
+    #         if minibatch <= 0 or minibatch > n:
+    #             raise ValueError("Please specify a correct minibatch > 0.")
+    #         else:
+    #             n_grad = np.average(grad[np.random.randint(0, n, minibatch)], axis=1).reshape((grad.shape[0], 1))
+    #     else:
+    #         n_grad = 0
+    #         raise ValueError("method could only be full, stochastic or minibatch.")
+    #
+    #     return n_grad
+    #
+    # def add_gradient(self, gradient):
+    #     """
+    #     The thing about this network, is that if param share is true,
+    #     the backward gradient does not always match the current dimension.
+    #
+    #     Thus we'll have to average the gradient to match the dimension
+    #     """
+    #
+    #     if self.param_share:
+    #
+    #         gradient = self.gradient_parser(gradient, method='full')
+    #
+    #     self.gradient += gradient
 
     '''
     The next few functions enable auto-gradients
@@ -192,8 +237,7 @@ class Variable:
         # In case of 1/0
         # self.value += 0.0001
 
-        self.parent = Variable(1 / self.value,
-                               lchild=self)
+        self.parent = Variable(1 / self.value, lchild=self)
         self.parent.back_prop = self.parent.back_inv
         return self.parent
 
@@ -228,9 +272,11 @@ class Variable:
             # and the original shape on other axis's.
             output_shape = list(self.shape)
             output_shape[axis] = 1
+            # print(output_shape)
 
             self.parent = Variable(np.sum(self.value, axis=axis).reshape(output_shape),
                                    lchild=self)
+            # print(self.parent.shape)
             # self.parent = Variable(np.sum(self.value, axis=axis),
             #                        lchild=self, path='sum')
 
@@ -250,16 +296,14 @@ class Variable:
     def back_sum(self):
         axis = self.sum_grad_parser['axis']
         shape = self.sum_grad_parser['shape']
-
+        # TODO Notice that this is just a 2D case
         if axis is None:
             self.lchild.gradient = np.ones(shape) * self.gradient
         else:
             # We need to reshape gradients
-            gradient_shape = list(shape)
-            gradient_shape[axis] = 1
-            self.gradient = self.gradient.reshape(gradient_shape)
-
-            self.lchild.gradient = np.ones(shape) * self.gradient
+            gradient_shape = list(shape)  # n, m
+            # print(self.gradient.shape)
+            self.lchild.gradient = self.gradient.repeat(gradient_shape[axis], axis=axis)
 
     def __pow__(self, power, modulo=None):
         return self.pow(power)
@@ -294,7 +338,7 @@ class Variable:
                                    lchild=self)
 
         else:
-            self.parent = Variable(np.average(self.value).reshape(()), lchild=self)
+            self.parent = Variable(np.average(self.value), lchild=self)
 
         self.parent.average_grad_parser = {"axis": axis,
                                            "shape": self.shape}
@@ -353,7 +397,6 @@ class Variable:
         elif axis == 1:
             output = self.value[np.arange(self.shape[0]), index].reshape((self.shape[0], 1))
             mask[np.arange(self.shape[0]), index] = 1
-            print(mask)
             # print(index)
 
         self.parent = Variable(output, lchild=self)
@@ -452,18 +495,13 @@ class Variable:
                                          self.gradient)
 
     def multiply(self, y):
-        """
-        Element-wise multiplication
-        :param y:
-        :return:
-        """
-        # print(self.value)
-        '''
-        Value Clipping
-        '''
+        """Element-wise multiplication
 
-        # self.value = np.multiply(self.value, self.value < VALUE_CLIPPING_THRESHOLD)
-        # self.value = np.multiply(self.value, self.value > -VALUE_CLIPPING_THRESHOLD)
+        Notice very strictly that this multiplication must have shape of self
+        equals to shape of y
+        """
+
+        assert self.shape == y.shape
 
         # Normal Process
         self.parent = Variable(np.multiply(self.value, y.value),
@@ -478,6 +516,20 @@ class Variable:
                                            self.multiply_grad_parser['y'])
         self.rchild.gradient = np.multiply(self.gradient,
                                            self.multiply_grad_parser['x'])
+
+    def repeat(self, repeat_number, axis):
+
+        self.parent = Variable(np.repeat(self.value, repeat_number, axis),
+                               lchild=self)
+        self.parent.back_prop = self.parent.back_repeat
+        self.parent.repeat_axis = axis
+
+        return self.parent
+
+    def back_repeat(self):
+        self.lchild.gradient = np.average(self.gradient, axis=self.repeat_axis).reshape(self.lchild.gradient.shape)
+
+
 
     # def div(self, y):
     #     """
@@ -553,8 +605,9 @@ class Variable:
                     containing the index for [(w), (fake sparse matrix)]
         """
 
-        output = Variable(np.zeros((self.shape[0], sparse_matrix_width)),
-                          lchild=self, rchild=w)
+        output = otter.zeros(shape=(self.shape[0], sparse_matrix_width), dtype=np.float32)
+        output.rchild = w
+        output.lchild = self
         output.back_prop = output.back_sparse_dot_with_mapping
 
         for each_mapping in mapping:
@@ -564,6 +617,8 @@ class Variable:
             # the i,j th element in the sparse matrix,
             # is multiplied by the ith column from the x matrix
             # and is added to jth column in the output column.
+            # print("self.value", self.value[:, i])
+            # print("w value", w.value[index_in_w])
 
             output.value[:, j] += self.value[:, i] * w.value[index_in_w]
 
@@ -577,6 +632,8 @@ class Variable:
         defined above
         """
         mapping = self.sparse_dot_with_mapping_grad_parser['mapping']
+        # print(self.rchild)
+        # print(self.lchild)
 
         self.rchild.gradient = np.zeros_like(self.rchild.gradient)
         self.lchild.gradient = np.zeros_like(self.lchild.gradient)

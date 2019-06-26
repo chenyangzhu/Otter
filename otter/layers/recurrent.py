@@ -62,7 +62,7 @@ class SimpleRNNCell():
 
 class StackedRNNCell():
     def __init__(self, cells, ):
-
+        pass
 
 
 class RNN(common.Layer):

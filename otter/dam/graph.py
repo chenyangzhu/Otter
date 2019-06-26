@@ -47,3 +47,8 @@ class Graph:
 
         if x.rchild is not None:
             self.update_gradient(x.rchild)
+
+    def set_and_update_gradient(self, x: Variable, gradient):
+        assert x.gradient.shape == gradient.shape
+        x.gradient = gradient
+        self.update_gradient(x)

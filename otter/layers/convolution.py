@@ -11,7 +11,7 @@ from scipy import sparse
 class Conv2D(common.Layer):
     def __init__(self, out_channel, kernel_size,
                  activation, stride=(1, 1),
-                 padding=(0, 0), bias=True, data_format="NHWC", trainable=True):
+                 padding=(0, 0), bias=True, data_format="NCWH", trainable=True):
         """ Convolution Layer 2D
         :param in_channel:      Int:    Number of input channels
         :param out_channel:     Int:    Number of output channels
@@ -74,11 +74,18 @@ class Conv2D(common.Layer):
             # On the other hand, we have to keep w changing at the same time.
             # We only need to initialize b once, with the knowledge of xnew and ynew
             # Initialize the kernel
-            self.w = Variable(np.random.normal(0, 1, (self.out_channel, self.in_channel,
+            self.w = Variable(np.random.normal(0, 0.01, (self.out_channel, self.in_channel,
                                                       self.kernel_size[0], self.kernel_size[1])),
                               trainable=self.trainable)
 
-            self.b = Variable(np.random.normal(0, 1, (1, self.out_channel, self.x_new, self.y_new)),
+          #
+          #   self.w = Variable(np.array([[[[-0.0394, -0.1065,  0.0439, -0.0088, -0.0170],
+          # [ 0.1969, -0.0443,  0.0493,  0.0645,  0.1785],
+          # [-0.1905,  0.1350,  0.0057, -0.1409,  0.1120],
+          # [-0.0441, -0.1194,  0.1239, -0.0306, -0.0034],
+          # [ 0.0288,  0.1108, -0.1808, -0.0666, -0.1213]]]]), trainable=True)
+
+            self.b = Variable(np.random.normal(0, 0.01, (1, self.out_channel, self.x_new, self.y_new)),
                               trainable=self.trainable, param_share=True)
 
             '''
@@ -86,6 +93,7 @@ class Conv2D(common.Layer):
             After we know the mapping, we can easily do the back-prop and forward-prop each time.
             '''
 
+            # self.check = {}
             self.w2mapping = []
 
             # Logic 1, without sorting
@@ -107,16 +115,8 @@ class Conv2D(common.Layer):
                                     self.w2mapping.append([(filter_idx, channel_idx, ix, jx),
                                                                    (mapping_old, mapping_new)])
 
-            # Now we need to sort this list, using quick sort
             self.initialize = False
-
-        # Apply the mapping
-        #
-        # start = time.time()
-        # for each in self.mapping.w2mapping:
-        #     self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
-        # print("forward, mapping", time.time() - start)
-        # # We first need to reshape our x matrix
+        # End Initialize
 
         input_image_flattened = X.reshape((self.n, self.old_length))
 

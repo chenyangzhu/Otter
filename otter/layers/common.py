@@ -86,9 +86,9 @@ class Dense(Layer):
         self.p = x.shape[1]  # input_tensor shape
 
         if self.initialize:
-            self.w = Variable(np.random.normal(0, 1, (self.p, self.m)),
+            self.w = Variable(np.random.normal(0, 0.1, (self.p, self.m)),
                               trainable=self.trainable, name='Dense_w')
-            self.b = Variable(np.random.normal(0, 1, (1, self.m)),
+            self.b = Variable(np.random.normal(0, 0.1, (1, self.m)),
                               trainable=self.trainable, param_share=True,
                               name='Dense_b')
             self.initialize = False
