@@ -44,12 +44,12 @@ def read_data():
 
 if __name__ == "__main__":
 
-    np.random.seed(2019)
+    np.random.seed(2022)
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
-    x_train = x_train[:20000]
-    y_train = y_train[:20000]
+    x_train = x_train[20000:30000]
+    y_train = y_train[20000:30000]
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
@@ -62,23 +62,22 @@ if __name__ == "__main__":
     y_train = y_train.reshape(n, m)
 
     conv1 = Conv2D(out_channel=8,
-                   kernel_size=(5, 5),
+                   kernel_size=(3, 3),
                    stride=(2, 2),
                    activation=relu)
 
     # pooling1 = MaxPooling2D(kernel_size=(3, 3),
     #                         stride=(2, 2))
 
-    # conv2 = Conv2D(out_channel=4,
-    #                kernel_size=(3, 3),
-    #                stride=(2, 2),
-    #                activation=relu)
+    conv2 = Conv2D(out_channel=4,
+                   kernel_size=(3, 3),
+                   stride=(2, 2),
+                   activation=relu)
 
     flatten = Flatten()
-    dense2 = Dense(output_shape=10,
-                   activation=softmax)
+    dense2 = Dense(output_shape=10)
 
-    optimizer = GradientDescent(0.8)
+    optimizer = GradientDescent(0.3)
 
     loss_list = []
     acc_list = []
@@ -87,7 +86,7 @@ if __name__ == "__main__":
     g = Graph()
 
     iteration = 1000
-    batch_size = 256
+    batch_size = 1024
     total_epoch = int(n / batch_size)
 
     for it_idx in range(iteration):
@@ -101,34 +100,26 @@ if __name__ == "__main__":
             y = Variable(y)
 
             a = conv1.forward(x)
-            c = flatten.forward(a)
+            b = conv2.forward(a)
+            c = flatten.forward(b)
             f = dense2.forward(c)
 
-            loss = sparse_categorical_crossentropy(y, f)
+            loss = sparse_categorical_crossentropy_with_softmax(y, f)
             acc = sparse_categorical_accuracy(y, f)
 
             g.update_gradient_with_optimizer(loss, optimizer)
             loss_list.append(loss.value)
-            acc_list.append(acc)
-            norm1_list.append(l2norm(conv1.w.value))
-            norm2_list.append(l2norm(dense2.w.value))
+
+            # acc_list.append(acc)
+            # norm1_list.append(l2norm(conv1.w.value))
+            # norm2_list.append(l2norm(dense2.w.value))
 
             print(f" acc:{acc}, loss:{loss.value}")
-            print(conv1.w.gradient)
-            # print(dense2.w.gradient)
-            # print(f)
+            # print(conv1.w.gradient)
+            # print(f.gradient)
+            # print(conv1.w.gradient)
 
             if epoch % 5 == 0:
                 plt.clf()
                 plt.plot(loss_list)
                 plt.show()
-
-                #
-                # plt.plot(acc_list)
-                # plt.show()
-                #
-                # plt.plot(norm1_list)
-                # plt.show()
-                #
-                # plt.plot(norm2_list)
-                # plt.show()

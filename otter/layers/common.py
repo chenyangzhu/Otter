@@ -66,7 +66,7 @@ class Layer():
 
 
 class Dense(Layer):
-    def __init__(self, output_shape, activation, trainable=True):
+    def __init__(self, output_shape, trainable=True):
 
         """
         :param output_shape:   # of hidden units
@@ -77,7 +77,7 @@ class Dense(Layer):
         # Normal initialization
         self.m = output_shape
         self.trainable = trainable
-        self.activation = activation
+        # self.activation = activation
         self.initialize = True
 
     def forward(self, x: Variable):
@@ -94,7 +94,7 @@ class Dense(Layer):
             self.initialize = False
 
         output = x.dot(self.w) + self.b
-        return self.activation(output)
+        return output
 
     def predict(self, x: Variable):
         return self.forward(x)
