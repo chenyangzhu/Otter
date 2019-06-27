@@ -1,10 +1,6 @@
 from otter.layers import common
 from otter.dam.structure import Variable
-from ..dam.parallel import iterate_list_with_parallel
 import numpy as np
-import time
-from otter.dam.module import timer
-from scipy import sparse
 
 
 # CNN
@@ -39,12 +35,6 @@ class Conv2D(common.Layer):
         # We need to add a transpose to the addition.
         self.initialize = True
 
-    # def set_map(self, idx):
-    #     start_idx, end_idx = idx
-    #     for each in self.mapping.w2mapping[start_idx: end_idx]:
-    #         self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
-
-    # @timer
     def forward(self, X: Variable):
         """
         :param X: X is a 4d tensor, [batch, channel, row, col]
@@ -77,13 +67,6 @@ class Conv2D(common.Layer):
                                                       self.kernel_size[0], self.kernel_size[1])),
                               trainable=self.trainable)
 
-          #
-          #   self.w = Variable(np.array([[[[-0.0394, -0.1065,  0.0439, -0.0088, -0.0170],
-          # [ 0.1969, -0.0443,  0.0493,  0.0645,  0.1785],
-          # [-0.1905,  0.1350,  0.0057, -0.1409,  0.1120],
-          # [-0.0441, -0.1194,  0.1239, -0.0306, -0.0034],
-          # [ 0.0288,  0.1108, -0.1808, -0.0666, -0.1213]]]]), trainable=True)
-
             self.b = Variable(np.random.normal(0, 0.01, (1, self.out_channel, self.x_new, self.y_new)),
                               trainable=self.trainable, param_share=True)
 
@@ -91,8 +74,6 @@ class Conv2D(common.Layer):
             Now we create a w2mapping, the mapping itself we only need it once for all. 
             After we know the mapping, we can easily do the back-prop and forward-prop each time.
             '''
-
-            # self.check = {}
             self.w2mapping = []
 
             # Logic 1, without sorting
