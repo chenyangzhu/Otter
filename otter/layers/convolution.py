@@ -1,5 +1,6 @@
 from otter.layers import common
 from otter.dam.structure import Variable
+import otter.ops as ops
 import numpy as np
 
 
@@ -8,6 +9,7 @@ class Conv2D(common.Layer):
     def __init__(self, out_channel, kernel_size,
                  stride=(1, 1),
                  padding=(0, 0), bias=True, data_format="NCWH", trainable=True):
+
         """ Convolution Layer 2D
         :param in_channel:      Int:    Number of input channels
         :param out_channel:     Int:    Number of output channels
@@ -98,14 +100,14 @@ class Conv2D(common.Layer):
             self.initialize = False
         # End Initialize
 
-        input_image_flattened = X.reshape((self.n, self.old_length))
+        input_image_flattened = ops.reshape(X, (self.n, self.old_length))
 
-        new_image_flattened = input_image_flattened.sparse_dot_with_mapping(self.w, self.w2mapping,
-                                                                            self.old_length,
-                                                                            self.new_length)
+        new_image_flattened = ops.sparse_dot_with_mapping(input_image_flattened, self.w, self.w2mapping,
+                                                          self.old_length,
+                                                          self.new_length)
 
-        output = new_image_flattened.reshape((self.n, self.out_channel,
-                                              self.x_new, self.y_new))
+        output = ops.reshape(new_image_flattened, (self.n, self.out_channel,
+                                                   self.x_new, self.y_new))
 
         # Add bias if necessary
         if self.bias:

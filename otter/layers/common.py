@@ -1,7 +1,7 @@
 import numpy as np
 from ..dam.structure import Variable
 import json
-import os
+import otter.ops as ops
 
 class Layer():
     def __init__(self):
@@ -58,8 +58,6 @@ class Layer():
                 # Set attribute
                 self.__setattr__(each_key, data[each_key])
 
-
-
     @property
     def params(self):
         return 0
@@ -93,7 +91,7 @@ class Dense(Layer):
                               name='Dense_b')
             self.initialize = False
 
-        output = x.dot(self.w) + self.b
+        output = ops.dot(x, self.w) + self.b
         return output
 
     def predict(self, x: Variable):
@@ -130,12 +128,11 @@ class Dropout(Layer):
 
             mask[coord] = 0
 
-        output = x.multiply(Variable(mask))
+        output = ops.multiply(x, Variable(mask))
 
         return output
 
     def predict(self, x: Variable):
-
         return x
 
 
@@ -145,12 +142,13 @@ class BatchNormalization(Layer):
 
     def forward(self, x: Variable):
         x_val = x.value
-        self.mean = Variable(np.average(x.value))
-        self.var_inv = Variable(np.array(np.var(x_val))).safe_inv()
-        output = x.sub(self.mean).multiply(self.var_inv)
+        self.mean = ops.average(x)
+        self.std_inv = ops.safe_inv(Variable(np.array(np.sqrt(np.var(x_val)))))
+        output = ops.multiply(x - self.mean, self.std_inv)
         return output
 
     def predict(self, x: Variable):
 
-        output = x.sub(self.mean).multiply(self.var_inv)
+        output = ops.multiply(x - self.mean, self.std_inv)
         return output
+

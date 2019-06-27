@@ -2,6 +2,7 @@ import numpy as np
 from otter.dam.structure import Variable
 from otter.optimizer import Optimizer
 from otter._hyperparam import *
+import otter.ops as ops
 
 class Graph:
     def __init__(self):
@@ -19,12 +20,13 @@ class Graph:
         # Gradient Clipping
         mask = (x.gradient < GRADIENT_CLIPPING_THRESHOLD).astype(int)
         mask = np.multiply(mask, (x.gradient > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
-        contra_mask = 1 - mask
-        x.gradient = np.multiply(mask, x.gradient) + contra_mask * GRADIENT_CLIPPING_THRESHOLD
+        mask = Variable(mask)
+        contra_mask = Variable(1) - mask
+        x.gradient = ops.multiply(mask, x.gradient) + ops.dot(contra_mask, GRADIENT_CLIPPING_THRESHOLD)
 
         if x.back_prop is not None:
             # which means x is an input node
-            x.back_prop()
+            x.back_prop(x)
 
         if x.trainable:
             optimizer.update_once(x)
@@ -40,7 +42,7 @@ class Graph:
 
     def update_gradient(self, x: Variable):
         if x.back_prop is not None:
-            x.back_prop()
+            x.back_prop(x)
 
         if x.lchild is not None:
             self.update_gradient(x.lchild)

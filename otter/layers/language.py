@@ -2,6 +2,7 @@ import numpy as np
 from otter.layers.common import Layer
 from otter.dam.structure import Variable
 from otter.utils import last_dim_one_hot
+import otter.ops as ops
 
 
 class Embedding(Layer):
@@ -34,7 +35,7 @@ class Embedding(Layer):
             self.initialize = False
 
         # First, find the corresponding word representation
-        embedded_word = x.dot(self.mapping)  # n x embed_size
+        embedded_word = ops.dot(x, self.mapping)  # n x embed_size
         return embedded_word
 
     def test_forward(self, x: Variable):

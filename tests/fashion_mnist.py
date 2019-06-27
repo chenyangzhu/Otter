@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import sklearn.model_selection
 
 
-from otter.dam.structure import Variable
 from otter.dam.graph import Graph
 from otter.layers.convolution import Conv2D, Flatten, MaxPooling2D
 from otter.ops.activation import softmax, sigmoid, relu
@@ -12,10 +11,8 @@ from otter.layers.common import Dense
 from otter.optimizer import *
 from otter.ops.loss import *
 from otter.utils import *
-from otter.model import Model
 
 from tqdm import tqdm
-import tensorflow as tf
 
 
 def read_data():

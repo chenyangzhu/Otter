@@ -21,6 +21,7 @@ def sparse_categorical_crossentropy(y: Variable, yhat: Variable):
     maxi = sliced.safe_log().average().neg()
     return maxi
 
+
 def sparse_categorical_crossentropy_with_softmax(y: Variable, yhat: Variable):
 
     sliced = yhat.slice(y.value.reshape((len(y.value),)), axis=1)
