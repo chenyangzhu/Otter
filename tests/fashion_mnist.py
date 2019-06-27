@@ -1,6 +1,8 @@
 import numpy as np
 import gzip
 import matplotlib.pyplot as plt
+import sklearn.model_selection
+
 
 from otter.dam.structure import Variable
 from otter.dam.graph import Graph
@@ -44,12 +46,14 @@ def read_data():
 
 if __name__ == "__main__":
 
-    np.random.seed(2022)
+    np.random.seed(2009)
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
-    x_train = x_train[20000:30000]
-    y_train = y_train[20000:30000]
+    x_train, _, y_train, _ = sklearn.model_selection.train_test_split(x_train, y_train, test_size=0.33, random_state=2019)
+
+    x_train = x_train
+    y_train = y_train
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
@@ -63,21 +67,17 @@ if __name__ == "__main__":
 
     conv1 = Conv2D(out_channel=8,
                    kernel_size=(3, 3),
-                   stride=(2, 2),
-                   activation=relu)
+                   stride=(2, 2))
 
-    # pooling1 = MaxPooling2D(kernel_size=(3, 3),
-    #                         stride=(2, 2))
-
-    conv2 = Conv2D(out_channel=4,
+    conv2 = Conv2D(out_channel=16,
                    kernel_size=(3, 3),
-                   stride=(2, 2),
-                   activation=relu)
+                   stride=(2, 2))
 
     flatten = Flatten()
+    dense1 = Dense(output_shape=128)
     dense2 = Dense(output_shape=10)
 
-    optimizer = GradientDescent(0.3)
+    optimizer = GradientDescent(0.08)
 
     loss_list = []
     acc_list = []
@@ -99,25 +99,21 @@ if __name__ == "__main__":
             x = Variable(x)
             y = Variable(y)
 
-            a = conv1.forward(x)
-            b = conv2.forward(a)
+            a = relu(conv1.forward(x))
+            b = relu(conv2.forward(a))
             c = flatten.forward(b)
-            f = dense2.forward(c)
+            d = relu(dense1.forward(c))
+            f = dense2.forward(d)
 
             loss = sparse_categorical_crossentropy_with_softmax(y, f)
             acc = sparse_categorical_accuracy(y, f)
 
+            # optimizer.learning_rate *= 0.99
+
             g.update_gradient_with_optimizer(loss, optimizer)
             loss_list.append(loss.value)
 
-            # acc_list.append(acc)
-            # norm1_list.append(l2norm(conv1.w.value))
-            # norm2_list.append(l2norm(dense2.w.value))
-
             print(f" acc:{acc}, loss:{loss.value}")
-            # print(conv1.w.gradient)
-            # print(f.gradient)
-            # print(conv1.w.gradient)
 
             if epoch % 5 == 0:
                 plt.clf()

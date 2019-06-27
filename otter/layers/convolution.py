@@ -10,7 +10,7 @@ from scipy import sparse
 # CNN
 class Conv2D(common.Layer):
     def __init__(self, out_channel, kernel_size,
-                 activation, stride=(1, 1),
+                 stride=(1, 1),
                  padding=(0, 0), bias=True, data_format="NCWH", trainable=True):
         """ Convolution Layer 2D
         :param in_channel:      Int:    Number of input channels
@@ -33,7 +33,6 @@ class Conv2D(common.Layer):
         self.data_format = data_format
         self.trainable = trainable
 
-        self.activation = activation
         # To be compatible with the previous setup,
         # the shape of b needs to have a 1 on the last dimension.
         # Therefore, we need here the reversed, and on later implementations,
@@ -130,9 +129,9 @@ class Conv2D(common.Layer):
         # Add bias if necessary
         if self.bias:
             output1 = output + self.b
-            return self.activation(output1)
+            return output1
 
-        return self.activation(output)
+        return output
 
     def predict(self, x):
         return self.forward(x)

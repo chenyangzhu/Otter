@@ -26,7 +26,7 @@ def sparse_categorical_crossentropy_with_softmax(y: Variable, yhat: Variable):
     sliced = yhat.slice(y.value.reshape((len(y.value),)), axis=1)
     sum_sliced = sliced.average()
 
-    exp_yhat = yhat.safe_exp().sum(axis=0).log().average()
+    exp_yhat = yhat.safe_exp().sum(axis=1).safe_log().clip(-1.5, 1.5).average()
 
     return exp_yhat - sum_sliced
 
