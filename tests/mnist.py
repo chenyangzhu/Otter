@@ -3,8 +3,6 @@ import gzip
 import matplotlib.pyplot as plt
 import sklearn.model_selection
 
-
-from otter.dam.structure import Variable
 from otter.dam.graph import Graph
 from otter.layers.convolution import Conv2D, Flatten, MaxPooling2D
 from otter.ops.activation import softmax, sigmoid, relu
@@ -12,10 +10,8 @@ from otter.layers.common import Dense
 from otter.optimizer import *
 from otter.ops.loss import *
 from otter.utils import *
-from otter.model import Model
 
 from tqdm import tqdm
-import tensorflow as tf
 
 
 def read_data():
@@ -25,7 +21,7 @@ def read_data():
     ]
     paths = []
     for i in range(len(files)):
-        paths.append('../dataset/fashion-mnist/' + files[i])
+        paths.append('../dataset/mnist/' + files[i])
 
     with gzip.open(paths[0], 'rb') as lbpath:
         y_train = np.frombuffer(lbpath.read(), np.uint8, offset=8)
@@ -51,9 +47,6 @@ if __name__ == "__main__":
     (x_train, y_train), (x_test, y_test) = read_data()
 
     x_train, _, y_train, _ = sklearn.model_selection.train_test_split(x_train, y_train, test_size=0.33, random_state=2019)
-
-    x_train = x_train
-    y_train = y_train
 
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))

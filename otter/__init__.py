@@ -4,3 +4,4 @@ import otter.layers
 
 from otter.dam.structure import Variable
 
+from otter.ops.initializer import *

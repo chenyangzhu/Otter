@@ -1,6 +1,7 @@
 from otter.layers import common
 import numpy as np
 from otter.dam.structure import Variable
+from otter.ops.activation import tanh
 
 
 # RNN
@@ -10,7 +11,7 @@ class SimpleRNNCell():
     Only an RNN cell.
     """
 
-    def __init__(self, input_shape, hidden_units, output_units, activation):
+    def __init__(self, hidden_units, output_units, activation):
 
         """
         :param input_shape:
@@ -20,17 +21,16 @@ class SimpleRNNCell():
         """
 
         super().__init__()
-        self.p = input_shape                # Input shape
         self.hidden_units = hidden_units    # Hidden units
         self.output_units = output_units    # output units
-        self.activation = activation
+        self.activation = activation        # Activation for hidden state
+        self.initialize = True
 
         # Initialize all params
-        self.u = Variable(np.random.normal(0, 1, (self.p, self.hidden_units)), trainable=True)
         self.w = Variable(np.random.normal(0, 1, (self.hidden_units, self.hidden_units)), trainable=True)
-        self.b = Variable(np.random.normal(0, 1, (self.hidden_units, 1)),
+        self.b = Variable(np.random.normal(0, 1, (1, self.hidden_units)),
                           trainable=True, param_share=True)
-        self.c = Variable(np.random.normal(0, 1, (self.output_units, 1)),
+        self.c = Variable(np.random.normal(0, 1, (1, self.output_units)),
                           trainable=True, param_share=True)
         self.v = Variable(np.random.normal(0, 1, (self.hidden_units, self.output_units)), trainable=True)
 
@@ -41,47 +41,52 @@ class SimpleRNNCell():
         :param h:
         :return:
         """
+        if self.initialize:
+            self.u = Variable(np.random.normal(0, 1, (x.shape[1], self.hidden_units)), trainable=True)
+            self.initialize = False
+
         if h is None:
             # In the first RNNcell, we don't have any hidden layers, so we initialize one
             h = Variable(np.random.normal(0, 1, (x.shape[0], self.hidden_units)))
 
         xu = x.dot(self.u)
         hw = h.dot(self.w)
-        self.a = xu.add(hw).add(self.b.T())
-        self.h = self.a.tanh()
-        self.o = self.h.dot(self.v).add(self.c.T())
-        y = self.activation(self.o)
-        return y, self.h
+        self.a = xu + hw + self.b
+        self.h = self.activation(self.a)
+        self.o = self.h.dot(self.v) + self.c
+        return self.o, self.h
 
     def predict_forward(self, x: Variable, h=None):
         return self.train_forward(x, h)
 
 
-class RNN(common.Layer):
-    def __init__(self, input_shape, number_of_rnn_cell, hidden_units,
-                 output_units, activation, return_sequence, return_state):
+class StackedRNNCell():
+    def __init__(self, cells, ):
+        pass
 
-        '''
-        :param input_shape:      d x 1
-        :param number_of_rnn_cell:         Integer. Number of RNN cells
-        :param hidden_units:     Integer. Number of hidden cells 向右的输出
-        :param output_units:     Integer. Output Units, 向上的输出
-        :param activation:       Class Activation
-        :param return_sequences: Boolean. Whether to return the last output in the output sequence,
-                                          or the full sequence
-        :param return_state:     Boolean. Whether to return the last state in addition to the output
-        '''
+
+class RNN(common.Layer):
+    def __init__(self, cell, number_of_rnn_cell, hidden_units,
+                 output_units, activation, return_sequence, return_state):
+        """
+        This class acted as a layer.
+
+        Args:
+
+            cell:                   if in tuple, means stacked RNN Cell
+            number_of_rnn_cell
+d
+
+        """
 
         super().__init__()
-        self.input_shape = input_shape
         self.p = number_of_rnn_cell
         self.hidden_units = hidden_units
         self.output_units = output_units
         self.return_sequence = return_sequence
         self.return_state = return_state
         self.activation = activation
-        self.RNN_cell = SimpleRNNCell(input_shape=self.input_shape,
-                                      hidden_units=self.hidden_units,
+        self.RNN_cell = SimpleRNNCell(hidden_units=self.hidden_units,
                                       output_units=self.output_units,
                                       activation=self.activation)
 
@@ -116,8 +121,8 @@ if __name__ == "__main__":
     with Graph() as g:
         n = 1000
         p = 64      # Sentence Length
-        q = 5      # Prediction Choices
-        m = 64     # Embedding Length
+        q = 5       # Prediction Choices
+        m = 64      # Embedding Length
         x = Variable(np.random.normal(0, 0.1, (n, p)))
         y = Variable(np.random.randint(0, q-1, (n, p)))
         layer2 = RNN(input_shape=p, number_of_rnn_cell=p,

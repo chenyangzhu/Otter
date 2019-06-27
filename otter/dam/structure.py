@@ -1,8 +1,6 @@
 import numpy as np
-import time
-from otter.dam.module import timer
-VALUE_CLIPPING_THRESHOLD = 2e2
-EPSILON = 1e-2
+from otter._hyperparam import *
+import otter
 
 
 class Variable:
@@ -40,6 +38,7 @@ class Variable:
 
         # The variable is utilized to take notice of
         self.first_optimize = True
+
         '''
         The back_prop function is what we use to do back_propagation
         The function only exists when the Variable is derived from
@@ -52,50 +51,6 @@ class Variable:
 
     def __str__(self):
         return "otter.Variable: " + str(self.name) + " " + str(self.dtype) + " (" + self.value.__str__() + ")"
-
-    '''
-    The next few functions enable auto-gradients
-    '''
-    #
-    # def back_propagation(self):
-    #     self.update_gradient(self)
-    #
-    # def update_gradient(self, x):
-    #     if x.back_prop is not None:
-    #         x.back_prop()
-    #
-    #     if x.lchild is not None:
-    #         self.update_gradient(x.lchild)
-    #
-    #     if x.rchild is not None:
-    #         self.update_gradient(x.rchild)
-    #
-    # def back_propagation_with_optimizer(self, optimizer):
-    #     self.update_gradient_with_optimizer(self, optimizer)
-    #
-    # def update_gradient_with_optimizer(self, x, optimizer):
-    #     # # Gradient Clipping
-    #     GRADIENT_CLIPPING_THRESHOLD = 1e3
-    #     mask = (x.gradient < GRADIENT_CLIPPING_THRESHOLD).astype(int)
-    #     mask = np.multiply(mask, (x.gradient > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
-    #     contra_mask = 1 - mask
-    #     x.gradient = np.multiply(mask, x.gradient) + contra_mask * GRADIENT_CLIPPING_THRESHOLD
-    #
-    #     # Gradient Normalizing
-    #     # x.gradient = (x.gradient - np.average(x.gradient)) / np.std(x.gradient)
-    #
-    #     if x.back_prop is not None:
-    #         # which means x is an input node
-    #         x.back_prop()
-    #
-    #     if x.trainable:
-    #         optimizer.update_once(x)
-    #
-    #     if x.lchild is not None:
-    #         self.update_gradient_with_optimizer(x.lchild, optimizer)
-    #
-    #     if x.rchild is not None:
-    #         self.update_gradient_with_optimizer(x.rchild, optimizer)
 
     '''
     The followings are two basic functions we provide to allow faster 
@@ -194,8 +149,7 @@ class Variable:
         # In case of 1/0
         # self.value += 0.0001
 
-        self.parent = Variable(1 / self.value,
-                               lchild=self)
+        self.parent = Variable(1 / self.value, lchild=self)
         self.parent.back_prop = self.parent.back_inv
         return self.parent
 
@@ -219,7 +173,7 @@ class Variable:
         if axis is not None:
             '''
             When axis is not None, by default the sum function in numpy will return
-            a shape probabily (1,) for 2-dim matrix. This is true, because all vectors should be a column vector.
+            a shape probably (1,) for 2-dim matrix. This is true, because all vectors should be a column vector.
             
             We'll be good in forward propagation, so we will leave the shape unchanged.
             However, this will be very dangerous for later back-prop, so we need to reshape
@@ -230,9 +184,11 @@ class Variable:
             # and the original shape on other axis's.
             output_shape = list(self.shape)
             output_shape[axis] = 1
+            # print(output_shape)
 
             self.parent = Variable(np.sum(self.value, axis=axis).reshape(output_shape),
                                    lchild=self)
+            # print(self.parent.shape)
             # self.parent = Variable(np.sum(self.value, axis=axis),
             #                        lchild=self, path='sum')
 
@@ -252,16 +208,14 @@ class Variable:
     def back_sum(self):
         axis = self.sum_grad_parser['axis']
         shape = self.sum_grad_parser['shape']
-
+        # TODO Notice that this is just a 2D case
         if axis is None:
             self.lchild.gradient = np.ones(shape) * self.gradient
         else:
             # We need to reshape gradients
-            gradient_shape = list(shape)
-            gradient_shape[axis] = 1
-            self.gradient = self.gradient.reshape(gradient_shape)
-
-            self.lchild.gradient = np.ones(shape) * self.gradient
+            gradient_shape = list(shape)  # n, m
+            # print(self.gradient.shape)
+            self.lchild.gradient = self.gradient.repeat(gradient_shape[axis], axis=axis)
 
     def __pow__(self, power, modulo=None):
         return self.pow(power)
@@ -296,7 +250,7 @@ class Variable:
                                    lchild=self)
 
         else:
-            self.parent = Variable(np.average(self.value).reshape(()), lchild=self)
+            self.parent = Variable(np.average(self.value), lchild=self)
 
         self.parent.average_grad_parser = {"axis": axis,
                                            "shape": self.shape}
@@ -323,8 +277,6 @@ class Variable:
         return (self + Variable(np.array(EPSILON))).log()
 
     def log(self):
-        # self.value += 0.0001
-
         self.parent = Variable(np.log(self.value),
                                lchild=self)
         # OVERFLOW PREVENTION: TO prevent 1 / 0 cases
@@ -453,18 +405,13 @@ class Variable:
                                          self.gradient)
 
     def multiply(self, y):
-        """
-        Element-wise multiplication
-        :param y:
-        :return:
-        """
-        # print(self.value)
-        '''
-        Value Clipping
-        '''
+        """Element-wise multiplication
 
-        # self.value = np.multiply(self.value, self.value < VALUE_CLIPPING_THRESHOLD)
-        # self.value = np.multiply(self.value, self.value > -VALUE_CLIPPING_THRESHOLD)
+        Notice very strictly that this multiplication must have shape of self
+        equals to shape of y
+        """
+
+        assert self.shape == y.shape
 
         # Normal Process
         self.parent = Variable(np.multiply(self.value, y.value),
@@ -480,20 +427,17 @@ class Variable:
         self.rchild.gradient = np.multiply(self.gradient,
                                            self.multiply_grad_parser['x'])
 
-    # def div(self, y):
-    #     """
-    #     Element-wise division
-    #     :param y:
-    #     :return:
-    #     """
-    #     self.parent = Variable(self.value / y.value,
-    #                            lchild=self, rchild=y)
-    #     self.parent.back_prop = self.parent.back_div
-    #     return self.parent
-    #
-    # def back_div(self):
-    #     # TODO write gradients
-    #     self.lchild.gradient = 0
+    def repeat(self, repeat_number, axis):
+
+        self.parent = Variable(np.repeat(self.value, repeat_number, axis),
+                               lchild=self)
+        self.parent.back_prop = self.parent.back_repeat
+        self.parent.repeat_axis = axis
+
+        return self.parent
+
+    def back_repeat(self):
+        self.lchild.gradient = np.average(self.gradient, axis=self.repeat_axis).reshape(self.lchild.gradient.shape)
 
     """
     Activations
@@ -503,15 +447,15 @@ class Variable:
         # First create the eye matrix
         n, m = self.shape
 
-        eye = self.value * np.eye(m)
+        eyed = self.value.reshape(n, m, 1) * np.eye(m)
 
-        self.lchild.gradient = np.multiply(self.value * (1 - self.value),
-                                           self.gradient)
+        ones = self.value.reshape(n, m, 1) * np.ones(m)
+        inverse_ones = self.value.reshape(n, 1, m) * np.ones((m, m))
 
-    # def back_tanh(self):
-    #     M = self.tanh_grad_parser['M']
-    #     xvalue = self.tanh_grad_parser['xvalue']
-    #     self.lchild.gradient = (np.exp(xvalue-M) + np.exp(-xvalue - M) - np.exp(-M))/(np.exp(xvalue-M) - np.exp(-xvalue-M))
+        ds = eyed - np.multiply(ones, inverse_ones)
+        avg_ds = np.average(ds, axis=0)
+
+        self.lchild.gradient = np.matmul(self.gradient, avg_ds)
 
     """
     Layers
@@ -533,15 +477,7 @@ class Variable:
                         grad_x[image_idx, channel_idx][tuple(self.mapping[i, j])] = self.gradient[
                             image_idx, channel_idx, i, j]
         self.lchild.gradient = grad_x
-    #
-    # @timer
-    # def back_mapping(self):
-    #     start = time.time()
-    #     for each in self.w2mapping:
-    #         self.lchild.gradient[each[0]] = self.gradient[each[1]]
-    #     print("mapping", time.time() - start)
 
-    # @timer
     def sparse_dot_with_mapping(self, w, mapping, sparse_matrix_height, sparse_matrix_width):
         """
         This function calculates a sparse matrix multiplication of xw
@@ -554,8 +490,9 @@ class Variable:
                     containing the index for [(w), (fake sparse matrix)]
         """
 
-        output = Variable(np.zeros((self.shape[0], sparse_matrix_width)),
-                          lchild=self, rchild=w)
+        output = otter.zeros(shape=(self.shape[0], sparse_matrix_width), dtype=np.float32)
+        output.rchild = w
+        output.lchild = self
         output.back_prop = output.back_sparse_dot_with_mapping
 
         for each_mapping in mapping:
@@ -565,6 +502,8 @@ class Variable:
             # the i,j th element in the sparse matrix,
             # is multiplied by the ith column from the x matrix
             # and is added to jth column in the output column.
+            # print("self.value", self.value[:, i])
+            # print("w value", w.value[index_in_w])
 
             output.value[:, j] += self.value[:, i] * w.value[index_in_w]
 
@@ -578,6 +517,8 @@ class Variable:
         defined above
         """
         mapping = self.sparse_dot_with_mapping_grad_parser['mapping']
+        # print(self.rchild)
+        # print(self.lchild)
 
         self.rchild.gradient = np.zeros_like(self.rchild.gradient)
         self.lchild.gradient = np.zeros_like(self.lchild.gradient)
@@ -588,208 +529,3 @@ class Variable:
             i, j = each_mapping[1]
             self.rchild.gradient[index_in_w] += np.sum(self.lchild.value[:, i] * self.gradient[:, j])
             self.lchild.gradient[:, i] += self.rchild.value[index_in_w] * self.gradient[:, j]
-
-        # print("rchild gradient", self.rchild.gradient)
-        # print("lchild gradient", self.rchild.gradient)
-
-
-
-
-
-    #
-    # def conv2d(self, w, stride, padding):
-    #     """
-    #     Forward propagation of convolution layer
-    #     :param w:
-    #     :param stride:
-    #     :param padding:
-    #     :return:
-    #     """
-    #     f, c, u, v = w.shape        # Kernel size
-    #     n, c, x, y = self.shape     # Input shape
-    #     kernel_size = [u, v]
-    #
-    #     x_new = int((x - kernel_size[0] + 2 * padding[0]) / stride[0] + 1)
-    #     y_new = int((y - kernel_size[1] + 2 * padding[1]) / stride[1] + 1)
-    #
-    #     self.parent = Variable(np.zeros((n, f, x_new, y_new)),
-    #                            lchild=self, rchild=w)
-    #
-    #     '''
-    #     In this mapping matrix, we use lists to store a 3d mapping with
-    #     [new_matrix_index, old_matrix_index, and weight_matrix_index]
-    #     During each iteration, whenever we have a mappping, we append a new list
-    #     containing these three variables.
-    #
-    #     During the back_prop, we search in the list for the corresponding index,
-    #     and sum all the rows we have.
-    #     '''
-    #
-    #     # Method 2
-    #     # We first create a mapping
-    #     mapping = []
-    #     # def idx_four2two(idx, shape):
-    #     #     """
-    #     #     This function transform a 4d index (n, channel, x, y) to a 1d number,
-    #     #     with accordance to np.reshape()
-    #     #
-    #     #     :param idx:     the index
-    #     #     :param shape:   the input_tensor shape [n, max_channel, max_x, max_y]
-    #     #     :return:
-    #     #     """
-    #     #     new_idx = idx[1] * np.prod(shape[2:]) + idx[2] * shape[3] + idx[3]
-    #     #     return idx[0], new_idx
-    #
-    #     # def idx_three2one(idx, shape):
-    #     #     new_idx = idx[0] * np.prod(shape[1:]) + idx[1] * shape[2] + idx[2]
-    #     #     return new_idx
-    #
-    #     # Building the mapping
-    #     for filter_idx in range(f):
-    #         for i in range(x_new):
-    #             for j in range(y_new):
-    #                 x_start = int(i * stride[0])
-    #                 y_start = int(j * stride[1])
-    #                 for ix in range(u):
-    #                     for jx in range(v):
-    #                         for channel_idx in range(c):
-    #                             mapping.append([(filter_idx, i, j),
-    #                                             (channel_idx, x_start + ix, y_start + jx),
-    #                                             (filter_idx, channel_idx, ix, jx)])
-    #     # Now mapping is already a valid sparse matrix with weight on its coords
-    #
-    #
-    #
-    #     # We first need to reshape our x matrix
-    #     # input_image_flattened = self.reshape((n, c*x*y))
-    #     # new_image_flattened = input_image_flattened.dot(mapping)
-    #     # new_image = new_image_flattened.reshape((n, f, x_new, y_new))
-    #     # mapping = []
-    #
-    #     record = True
-    #     for image_idx in range(n):          # For each image
-    #         for filter_idx in range(f):    # For each channel
-    #             # The mapping for each image and each channel is the same,
-    #             # so we only need to record the mapping once.
-    #             for i in range(x_new):
-    #                 for j in range(y_new):  # For each in the coordinates.
-    #
-    #                     # First, find the clip coordinate
-    #                     x_start = int(i * stride[0])
-    #                     x_end = int(x_start + u)
-    #                     y_start = int(j * stride[1])
-    #                     y_end = int(y_start + v)
-    #
-    #                     # Record the mapping for later back-prop
-    #                     if record:
-    #                         for ix in range(u):
-    #                             for jx in range(v):  # For each element in the weight matrix
-    #                                 for channel_idx in range(c):
-    #                                     mapping.append([(filter_idx, i, j),
-    #                                                     (channel_idx, x_start + ix, y_start + jx),
-    #                                                     (filter_idx, channel_idx, ix, jx)])
-    #                     # end record
-    #
-    #                     # Computation
-    #                     clip = self.value[image_idx, :, x_start: x_end, y_start: y_end]
-    #                     weighted_clip = np.multiply(clip, w.value[filter_idx])
-    #                     sum_of_weighted_clip = np.sum(weighted_clip)
-    #
-    #                     self.parent.value[image_idx, filter_idx, i, j] = sum_of_weighted_clip
-    #
-    #                 # end for j
-    #             # end for i
-    #         # end for filter_idx
-    #         record = False  # End record, cause others are the same.
-    #     # end for image_idx
-    #     self.parent.conv2d_grad_parser = {'x_shape': [n, c, x, y],
-    #                                       'w_shape': [f, c, u, v],
-    #                                       'w': w.value,
-    #                                       'x': self.value,
-    #                                       'mapping': mapping}
-    #     self.parent.back_prop = self.parent.back_conv2d
-    #     return self.parent
-    #
-    # def back_conv2d(self):
-    #     n, c, x, y = x_shape = self.conv2d_grad_parser['x_shape']
-    #     f, c, u, v = w_shape = self.conv2d_grad_parser['w_shape']
-    #     mapping = self.conv2d_grad_parser['mapping']
-    #     w = self.conv2d_grad_parser['w']
-    #     X = self.conv2d_grad_parser['x']
-    #
-    #     gradient_x = np.zeros(x_shape)  # n c x y
-    #     gradient_w = np.zeros(w_shape)  # f c u v
-    #
-    #     # Logic 2, iterate through all the rows in mapping matrix
-    #     # We then directly update the gradients in gradient_x and gradient_w
-    #     # print(self.gradient.shape)
-    #     # print(x_shape)
-    #     # print(w_shape)
-    #
-    #     for each_map in mapping:
-    #         # print(each_map)
-    #
-    #         # In this iteration, we want to update the X[:, :, each_map[1]]
-    #         # and we want to update the w[:, :, each_map[2]]
-    #         # Despite the fact that the first dimension of X and w are different,
-    #         # one is n and the other is f
-    #
-    #         # We first update the gradient for x
-    #         gradient_x[:, each_map[1][0], each_map[1][1], each_map[1][2]] = self.gradient[:, each_map[0][0], each_map[0][1], each_map[0][2]] * \
-    #                                                                       w[each_map[2][0], each_map[2][1], each_map[2][2], each_map[2][3]]
-    #
-    #         # We then want to update the gradient for w
-    #         gradient_w[each_map[2][0], each_map[2][1], each_map[2][2], each_map[2][3]] = np.matmul(self.gradient[:, each_map[0][0], each_map[0][1], each_map[0][2]].T,
-    #                                                                       X[:, each_map[1][0], each_map[1][1], each_map[1][2]])
-    #
-    #     # Logic 1, the very stupid approach.
-    #     for image_idx in range(n):
-    #         for channel_idx in range(c):
-    #             for i in range(x):
-    #                 for j in range(y):  # for each_element in the gradient matrix
-    #
-    #                     # search the mapping matrix for all (i,j) coord in the old matrix
-    #                     # i.e. the second col.
-    #                     output = 0
-    #
-    #                     # The logic here, is we iterate through the mapping matrix,
-    #                     # We then find all the rows that satisfies the index for the old x's.
-    #                     #
-    #                     for each_mapping in mapping:
-    #                         if each_mapping[1] == (i, j):
-    #                             # old x matrix, or grad_x or lchild gradient matrix
-    #                             for filter_idx in range(f):
-    #                                 output += self.gradient[image_idx, filter_idx][each_mapping[0]] \
-    #                                           * w[filter_idx, channel_idx][each_mapping[2]]
-    #
-    #                     gradient_x[image_idx, channel_idx, i, j] = output
-    #
-    #             # End for each element in one channel of x
-    #         # End for each channel
-    #     # End for each image
-    #
-    #     for filter_idx in range(f):
-    #         for channel_idx in range(c):
-    #             for i in range(u):
-    #                 for j in range(v):  # for each_element in the gradient matrix
-    #
-    #                     # search the mapping matrix for all (i,j) coord in the old matrix
-    #                     # i.e. the second col.
-    #                     output = 0
-    #                     for each_mapping in mapping:
-    #
-    #                         if each_mapping[2] == (i, j):
-    #
-    #                             # old x matrix, or grad_x or lchild gradient matrix
-    #                             for image_idx in range(n):
-    #                                 output += self.gradient[image_idx, filter_idx][each_mapping[0]] \
-    #                                           * X[image_idx, channel_idx][each_mapping[1]]
-    #
-    #                     gradient_w[filter_idx, channel_idx, i, j] = output
-    #
-    #             # End for each element in one channel of x
-    #         # End for each channel
-    #     # End for each image
-    #
-    #     self.lchild.gradient = gradient_x
-    #     self.rchild.gradient = gradient_w

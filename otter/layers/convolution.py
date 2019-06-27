@@ -1,17 +1,13 @@
 from otter.layers import common
 from otter.dam.structure import Variable
-from ..dam.parallel import iterate_list_with_parallel
 import numpy as np
-import time
-from otter.dam.module import timer
-from scipy import sparse
 
 
 # CNN
 class Conv2D(common.Layer):
     def __init__(self, out_channel, kernel_size,
-                 activation, stride=(1, 1),
-                 padding=(0, 0), bias=True, data_format="NHWC", trainable=True):
+                 stride=(1, 1),
+                 padding=(0, 0), bias=True, data_format="NCWH", trainable=True):
         """ Convolution Layer 2D
         :param in_channel:      Int:    Number of input channels
         :param out_channel:     Int:    Number of output channels
@@ -33,19 +29,12 @@ class Conv2D(common.Layer):
         self.data_format = data_format
         self.trainable = trainable
 
-        self.activation = activation
         # To be compatible with the previous setup,
         # the shape of b needs to have a 1 on the last dimension.
         # Therefore, we need here the reversed, and on later implementations,
         # We need to add a transpose to the addition.
         self.initialize = True
 
-    # def set_map(self, idx):
-    #     start_idx, end_idx = idx
-    #     for each in self.mapping.w2mapping[start_idx: end_idx]:
-    #         self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
-
-    # @timer
     def forward(self, X: Variable):
         """
         :param X: X is a 4d tensor, [batch, channel, row, col]
@@ -74,18 +63,17 @@ class Conv2D(common.Layer):
             # On the other hand, we have to keep w changing at the same time.
             # We only need to initialize b once, with the knowledge of xnew and ynew
             # Initialize the kernel
-            self.w = Variable(np.random.normal(0, 1, (self.out_channel, self.in_channel,
+            self.w = Variable(np.random.normal(0, 0.01, (self.out_channel, self.in_channel,
                                                       self.kernel_size[0], self.kernel_size[1])),
                               trainable=self.trainable)
 
-            self.b = Variable(np.random.normal(0, 1, (1, self.out_channel, self.x_new, self.y_new)),
+            self.b = Variable(np.random.normal(0, 0.01, (1, self.out_channel, self.x_new, self.y_new)),
                               trainable=self.trainable, param_share=True)
 
             '''
             Now we create a w2mapping, the mapping itself we only need it once for all. 
             After we know the mapping, we can easily do the back-prop and forward-prop each time.
             '''
-
             self.w2mapping = []
 
             # Logic 1, without sorting
@@ -107,16 +95,8 @@ class Conv2D(common.Layer):
                                     self.w2mapping.append([(filter_idx, channel_idx, ix, jx),
                                                                    (mapping_old, mapping_new)])
 
-            # Now we need to sort this list, using quick sort
             self.initialize = False
-
-        # Apply the mapping
-        #
-        # start = time.time()
-        # for each in self.mapping.w2mapping:
-        #     self.mapping.value[each[1]] += self.w.value[each[0]]  # this is by setting values.
-        # print("forward, mapping", time.time() - start)
-        # # We first need to reshape our x matrix
+        # End Initialize
 
         input_image_flattened = X.reshape((self.n, self.old_length))
 
@@ -130,9 +110,9 @@ class Conv2D(common.Layer):
         # Add bias if necessary
         if self.bias:
             output1 = output + self.b
-            return self.activation(output1)
+            return output1
 
-        return self.activation(output)
+        return output
 
     def predict(self, x):
         return self.forward(x)
@@ -204,7 +184,7 @@ class Flatten(common.Layer):
     def __init__(self):
         super().__init__()
 
-    def forward(self, X):
+    def forward(self, X: Variable):
         self.n, self.c, self.x, self.y = X.shape
         output = X.reshape((self.n, self.c * self.x * self.y))
         return output
