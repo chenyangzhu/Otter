@@ -18,8 +18,8 @@ with Graph() as g:
     x = Variable(np.random.normal(0, 1, (n, p)))
     y = Variable(np.random.normal(0, 1, (n, m)))
 
-    layer1 = Dense(output_shape=10, activation=sigmoid)
-    layer2 = Dense(output_shape=m, activation=sigmoid)
+    layer1 = Dense(output_shape=10)
+    layer2 = Dense(output_shape=m)
     optimizer = GradientDescent(0.8)
     loss = mean_squared_error
 
@@ -28,8 +28,8 @@ with Graph() as g:
     for i in range(300):
         if i % 50 == 0:
             print(i)
-        a = layer1.forward(x)
-        b = layer2.forward(a)
+        a = sigmoid(layer1.forward(x))
+        b = sigmoid(layer2.forward(a))
         c = loss(y, b)
         g.update_gradient_with_optimizer(c, optimizer)
 

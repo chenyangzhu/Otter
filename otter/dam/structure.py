@@ -1,12 +1,11 @@
 import numpy as np
 from otter._hyperparam import *
-from otter.ops.basics import *
-import otter
+import otter as ot
 
 
 class Variable:
 
-    def __init__(self, x, dtype=None, lchild=None, rchild=None,
+    def __init__(self, x, dtype=None, require_gradient=True, lchild=None, rchild=None,
                  trainable=False, param_share=False,
                  name=None):
 
@@ -31,7 +30,8 @@ class Variable:
 
         self.lchild = lchild
         self.rchild = rchild
-        self.gradient = Variable(np.ones(self.value.shape))
+        if require_gradient:
+            self.gradient = Variable(np.ones(self.value.shape), require_gradient=False)
         self.trainable = trainable
         self.param_share = param_share
         self.name = name
@@ -92,19 +92,22 @@ class Variable:
 
     @property
     def T(self):
-        return T(self)
+        return ot.T(self)
 
     def __add__(self, y):
-        return otter.ops.add(self, y)
+        return ot.ops.add(self, y)
 
     def __radd__(self, y):
-        return otter.ops.add(self, y)
+        return ot.ops.add(self, y)
 
     def __sub__(self, y):
-        return otter.ops.sub(self, y)
+        return ot.ops.sub(self, y)
 
     def __rsub__(self, y):
-        return otter.ops.sub(self, y)
+        return ot.ops.sub(self, y)
+
+    def __pow__(self, y):
+        return ot.ops.pow(self, y)
 
     # def T(self):  # Checked
     #     self.parent = Variable(x=self.value.T,

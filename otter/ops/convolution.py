@@ -1,6 +1,8 @@
+from otter import ops as ops
+from otter.dam.structure import Variable
+from .._hyperparam import *
 import numpy as np
-from ..dam.structure import Variable
-import otter
+import otter as ot
 
 
 def conv2d(input, filter, strides, padding, data_format='NHWC'):
@@ -21,7 +23,7 @@ def sparse_dot_with_mapping(x, w, mapping,
                 containing the index for [(w), (fake sparse matrix)]
     """
 
-    output = otter.zeros(shape=(x.shape[0], sparse_matrix_width), dtype=np.float32)
+    output = ot.zeros(shape=(x.shape[0], sparse_matrix_width), dtype=np.float32)
     output.rchild = w
     output.lchild = x
     output.back_prop = back_sparse_dot_with_mapping

@@ -1,11 +1,14 @@
-import numpy as np
-from ..dam.structure import Variable
+
+from otter import ops as ops
+from otter.dam.structure import Variable
 from .._hyperparam import *
-import otter.ops as ops
+import numpy as np
 
 """
 Self Calculations
 """
+
+# __all__ = ['inv', 'back_inv']
 
 
 def inv(x: Variable):
@@ -15,15 +18,15 @@ def inv(x: Variable):
 
 
 def back_inv(x: Variable):
-    x.lchild.update_gradient(neg((multiply(x.gradient, x.value ** 2))))
+    x.lchild.update_gradient(neg(multiply(x.gradient, x ** Variable(np.array(2)))))
 
 
 def safe_inv(x: Variable):
-    return inv(x + Variable(EPSILON))
+    return inv(x + Variable(np.array(EPSILON)))
 
 
 def neg(x: Variable):
-    return Variable(0) - x
+    return Variable(np.array(0)) - x
 
 
 def T(x: Variable):  # Checked
@@ -34,7 +37,7 @@ def T(x: Variable):  # Checked
 
 
 def back_T(x: Variable):
-    x.lchild.update_gradient(x.gradient.T())
+    x.lchild.update_gradient(x.gradient.T)
 
 
 """
@@ -73,7 +76,7 @@ def sub(x: Variable, y: Variable):
 
 def back_sub(x: Variable):
     x.lchild.update_gradient(x.gradient)
-    x.rchild.update_gradient(x.gradient.neg())
+    x.rchild.update_gradient(ops.neg(x.gradient))
 
 
 def dot(x: Variable, y: Variable):
@@ -83,8 +86,8 @@ def dot(x: Variable, y: Variable):
 
 
 def back_dot(x: Variable):
-    x.lchild.update_gradient(x.gradient.dot(x.rchild.T()))
-    x.rchild.update_gradient(x.lchild.T().dot(x.gradient))
+    x.lchild.update_gradient(dot(x.gradient, x.rchild.T))
+    x.rchild.update_gradient(dot(x.lchild.T, x.gradient))
 
 
 def multiply(x: Variable, y: Variable):
@@ -96,8 +99,8 @@ def multiply(x: Variable, y: Variable):
 
 
 def back_multiply(x: Variable):
-    x.lchild.update_gradient(x.gradient.multiply(x.rchild))
-    x.rchild.update_gradient(x.gradient.multiply(x.lchild))
+    x.lchild.update_gradient(ops.multiply(x.gradient, x.rchild))
+    x.rchild.update_gradient(ops.multiply(x.gradient, x.lchild))
 
 
 def __pow__(x: Variable, power: Variable):
@@ -105,10 +108,14 @@ def __pow__(x: Variable, power: Variable):
     output.back_prop = back_pow
     return output
 
+def pow(x: Variable, power: Variable):
+    output = Variable(x.value ** power.value, lchild=x, rchild=power)
+    output.back_prop = back_pow
+    return output
 
 def back_pow(x: Variable):
     # TODO add right child gradient
-    x.lchild.update_gradient(x.rchild.dot(x.lchild ** (x.rchild - 1)).multiply(x.gradient))
+    x.lchild.update_gradient(ops.dot(x.rchild, ops.multiply(x.lchild ** (x.rchild - Variable(np.ones(1))), x.gradient)))
 
 
 """
@@ -117,10 +124,9 @@ More advanced self calculation
 
 
 def maximum(x: Variable, axis=None):
-
+    mask = Variable(np.zeros(x.value.shape))
     if axis is not None:
         max_idx = np.argmax(x.value, axis=axis)
-        mask = Variable(np.zeros(x.value.shape))
 
         # TODO Caution: Now we'll only do 2D cases
         if axis == 1:
@@ -129,7 +135,8 @@ def maximum(x: Variable, axis=None):
             mask.value[max_idx, np.arange(mask.shape[1])] = 1
 
     else:
-        mask = (x.parent.value == x.value).astype(int)
+        max_idx = np.argmax(x.value)
+        mask.value[max_idx] = 1
 
     output = multiply(x, mask)
 
@@ -202,7 +209,7 @@ def back_average(x: Variable):
     shape = x.average_grad_parser['shape']
 
     if axis is None:
-        x.lchild.update_gradient(np.ones(shape) * x.gradient / np.prod(shape))
+        x.lchild.update_gradient(ops.dot(ops.dot(Variable(np.ones(shape)), x.gradient), Variable(1 / np.prod(shape))))
     else:
         gradient_shape = list(shape)
         gradient_shape[axis] = 1

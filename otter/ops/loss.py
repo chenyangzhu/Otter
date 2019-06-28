@@ -1,12 +1,11 @@
 import numpy as np
-from otter import Variable
+from otter.dam.structure import Variable
+from otter import ops as ops
 
 
 def mean_squared_error(y: Variable, yhat: Variable):
     assert y.shape == yhat.shape
-
-    output = ((y - yhat) ** 2).average()
-
+    output = ops.average(ops.pow(y - yhat, Variable(np.array(2))))
     return output
 
 
@@ -17,18 +16,16 @@ def sparse_categorical_crossentropy(y: Variable, yhat: Variable):
     :return:
     """
 
-    sliced = yhat.slice(y.value.reshape((len(y.value),)), axis=1)
-    maxi = sliced.safe_log().average().neg()
+    sliced = ops.slice(yhat, ops.reshape(y, (y.shape[0], )), axis=1)
+    maxi = ops.neg(ops.average(ops.safe_log(sliced)))
     return maxi
 
 
 def sparse_categorical_crossentropy_with_softmax(y: Variable, yhat: Variable):
 
-    sliced = yhat.slice(y.value.reshape((len(y.value),)), axis=1)
-    sum_sliced = sliced.average()
-
-    exp_yhat = yhat.safe_exp().sum(axis=1).safe_log().clip(-1.5, 1.5).average()
-
+    sliced = ops.slice(yhat, ops.reshape(y, (y.shape[0], )), axis=1)
+    sum_sliced = ops.average(sliced)
+    exp_yhat = ops.average(ops.clip(ops.safe_log(ops.sum(ops.safe_exp(yhat), axis=1)), -1.5, 1.5))
     return exp_yhat - sum_sliced
 
 
@@ -40,6 +37,5 @@ def sparse_categorical_accuracy(y: Variable, yhat: Variable):
     """
 
     argmax_y = np.argmax(yhat.value, axis=1)
-    long_y = y.reshape((y.shape[0],)).value
-
+    long_y = ops.reshape(y, (y.shape[0],)).value
     return np.average(long_y == argmax_y)

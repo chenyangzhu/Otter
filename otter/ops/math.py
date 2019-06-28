@@ -1,7 +1,7 @@
-import numpy as np
 from otter._hyperparam import *
-import otter.ops as ops
+import numpy as np
 from otter.dam.structure import Variable
+from otter import ops as ops
 
 
 def exp(x: Variable) -> Variable:
@@ -25,7 +25,7 @@ def log(x: Variable) -> Variable:
     inverse = 1 / x.value
 
     output.log_grad_parser = {"inverse": inverse}
-    output.back_prop = output.back_log
+    output.back_prop = back_log
     return output
 
 

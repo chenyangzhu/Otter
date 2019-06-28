@@ -5,6 +5,7 @@ Further generalize the model into capability of coping with different w's and b'
 """
 import numpy as np
 from otter.dam.structure import Variable
+import otter as ot
 
 __all__ = ["GradientDescent", "StochasticGradientDescent",
            "RMSProp", "Adam"]
@@ -50,7 +51,7 @@ class Optimizer:
 class GradientDescent(Optimizer):
     def __init__(self, learning_rate, mini_batch=-1):
         super().__init__()
-        self.learning_rate = learning_rate
+        self.learning_rate = Variable(np.array(learning_rate))
         self.mini_batch = mini_batch
 
     def update_once(self, x: Variable):
@@ -61,7 +62,7 @@ class GradientDescent(Optimizer):
             gradient = x.gradient
 
         # Gradient Clipping
-        x.value = x.value - self.learning_rate * gradient
+        x.value = x.value - ot.dot(self.learning_rate, gradient).value
 
 
 class StochasticGradientDescent(Optimizer):

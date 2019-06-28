@@ -18,11 +18,11 @@ class Graph:
         # print(type(x))
 
         # Gradient Clipping
-        mask = (x.gradient < GRADIENT_CLIPPING_THRESHOLD).astype(int)
-        mask = np.multiply(mask, (x.gradient > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
+        mask = (x.gradient.value < GRADIENT_CLIPPING_THRESHOLD).astype(int)
+        mask = np.multiply(mask, (x.gradient.value > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
         mask = Variable(mask)
-        contra_mask = Variable(1) - mask
-        x.gradient = ops.multiply(mask, x.gradient) + ops.dot(contra_mask, GRADIENT_CLIPPING_THRESHOLD)
+        contra_mask = Variable(np.array(1)) - mask
+        x.gradient = ops.multiply(mask, x.gradient) + ops.dot(contra_mask, Variable(np.array(GRADIENT_CLIPPING_THRESHOLD)))
 
         if x.back_prop is not None:
             # which means x is an input node

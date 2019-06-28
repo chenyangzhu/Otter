@@ -1,5 +1,6 @@
-
-from .basics import *
+from otter.dam.structure import Variable
+import numpy as np
+from otter import ops as ops
 
 
 def clip(x, floor, ceiling):
@@ -50,7 +51,7 @@ def slice(x: Variable, index, axis):
 
 
 def back_slice(x: Variable):
-    x.lchild.update_gradient(multiply(x.slice_grad_parser['mask'], x.gradient))
+    x.lchild.update_gradient(ops.multiply(x.slice_grad_parser['mask'], x.gradient))
 
 
 def repeat(x, repeat_number, axis):
@@ -63,4 +64,4 @@ def repeat(x, repeat_number, axis):
 
 
 def back_repeat(x):
-    x.lchild.update_gradient(reshape(average(x.gradient, axis=x.repeat_axis), x.lchild.gradient.shape))
+    x.lchild.update_gradient(reshape(ops.average(x.gradient, axis=x.repeat_axis), x.lchild.gradient.shape))

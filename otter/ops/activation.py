@@ -12,7 +12,7 @@ in the Variable class.
 
 import numpy as np
 from otter.dam.structure import Variable
-import otter.ops as ops
+from otter import ops as ops
 
 
 def sigmoid(x: Variable):

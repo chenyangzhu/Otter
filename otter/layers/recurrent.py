@@ -1,7 +1,6 @@
 from otter.layers import common
 import numpy as np
 from otter.dam.structure import Variable
-from otter.ops.activation import tanh
 
 
 # RNN
