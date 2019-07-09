@@ -64,4 +64,4 @@ with Graph() as g:
 
 | Network | n=1        | n=10,000         | n=60,000  |
 |---------| ------------- |-------------| -----|
-|1-layer CNN(Mnist)| | | |
+|1-layer CNN(Mnist)|![](https://github.com/chenyangzhu/Otter/raw/new_base_calculation/pics/convnet_mnist_1.png)|![](https://github.com/chenyangzhu/Otter/raw/new_base_calculation/pics/convnet_mnist_1w.png) | |
