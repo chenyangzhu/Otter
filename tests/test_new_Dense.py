@@ -25,14 +25,13 @@ with Graph() as g:
 
     loss_array = []
 
-    for i in range(300):
+    for i in range(100):
         if i % 50 == 0:
             print(i)
-        a = sigmoid(layer1.forward(x))
-        b = sigmoid(layer2.forward(a))
+        a = sigmoid(layer1(x))
+        b = sigmoid(layer2(a))
         c = loss(y, b)
-        g.update_gradient_with_optimizer(c, optimizer)
-
+        g.back_propagate_with_optimizer(c, optimizer)
         loss_array.append(c.value)
 
 plt.plot(loss_array)

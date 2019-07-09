@@ -63,7 +63,7 @@ class Model:
 
                 yhat = self.forward(batch_x)
                 l = self.loss(batch_y, yhat)
-                l.update_gradient_with_optimizer(self.optimizer)
+                l.back_propagate_with_optimizer(self.optimizer)
 
     def save(self, path='./tmp'):
 
@@ -147,7 +147,7 @@ class Sequential(Model):
 
                 # Back-prop
 
-                self.graph.update_gradient_with_optimizer(output, optimizer=self.optimizer)
+                self.graph.back_propagate_with_optimizer(output, optimizer=self.optimizer)
 
                 batch_loss += output.value
             # End batch

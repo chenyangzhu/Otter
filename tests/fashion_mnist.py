@@ -42,20 +42,15 @@ def read_data():
 
 
 if __name__ == "__main__":
-
-    np.random.seed(2009)
-
+    np.random.seed(2019)
     (x_train, y_train), (x_test, y_test) = read_data()
-
     x_train, _, y_train, _ = sklearn.model_selection.train_test_split(x_train, y_train, test_size=0.33, random_state=2019)
 
     x_train = x_train
     y_train = y_train
-
     avg = np.average(x_train)
     sqrt = np.sqrt(np.var(x_train))
     x_train = (x_train - avg) / sqrt
-
     n, x_dim, y_dim = x_train.shape  # 60000, 28, 28
     c = 1
     m = 1
@@ -74,7 +69,7 @@ if __name__ == "__main__":
     dense1 = Dense(output_shape=128)
     dense2 = Dense(output_shape=10)
 
-    optimizer = GradientDescent(0.08)
+    optimizer = GradientDescent(1e-4)
 
     loss_list = []
     acc_list = []
@@ -89,30 +84,26 @@ if __name__ == "__main__":
     for it_idx in range(iteration):
         print(f"The {it_idx}th iteration.")
         for epoch in tqdm(range(total_epoch)):
-
             x = x_train[epoch*batch_size: (epoch+1) * batch_size]
             y = y_train[epoch*batch_size: (epoch+1) * batch_size]
 
             x = Variable(x)
             y = Variable(y)
 
-            a = relu(conv1.forward(x))
-            b = relu(conv2.forward(a))
-            c = flatten.forward(b)
-            d = relu(dense1.forward(c))
-            f = dense2.forward(d)
+            a = relu(conv1(x))
+            b = relu(conv2(a))
+            c = flatten(b)
+            d = relu(dense1(c))
+            f = dense2(d)
 
             loss = sparse_categorical_crossentropy_with_softmax(y, f)
             acc = sparse_categorical_accuracy(y, f)
 
-            # optimizer.learning_rate *= 0.99
-
-            g.update_gradient_with_optimizer(loss, optimizer)
+            g.back_propagate_with_optimizer(loss, optimizer)
             loss_list.append(loss.value)
 
             print(f" acc:{acc}, loss:{loss.value}")
 
             if epoch % 5 == 0:
-                plt.clf()
                 plt.plot(loss_list)
                 plt.show()

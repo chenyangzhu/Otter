@@ -22,10 +22,9 @@ def sparse_categorical_crossentropy(y: Variable, yhat: Variable):
 
 
 def sparse_categorical_crossentropy_with_softmax(y: Variable, yhat: Variable):
-
     sliced = ops.slice(yhat, ops.reshape(y, (y.shape[0], )), axis=1)
     sum_sliced = ops.average(sliced)
-    exp_yhat = ops.average(ops.clip(ops.safe_log(ops.sum(ops.safe_exp(yhat), axis=1)), -1.5, 1.5))
+    exp_yhat = ops.average(ops.safe_log(ops.sum(ops.safe_exp(yhat), axis=1)))
     return exp_yhat - sum_sliced
 
 

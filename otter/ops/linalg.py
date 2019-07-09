@@ -22,7 +22,7 @@ def reshape(x: Variable, new_shape):
 
 
 def back_reshape(x: Variable):
-    x.lchild.update_gradient(x.gradient.reshape(x.lchild.shape))
+    x.lchild.update_gradient(ops.reshape(x.gradient, x.lchild.shape))
 
 
 def slice(x: Variable, index, axis):
@@ -34,24 +34,29 @@ def slice(x: Variable, index, axis):
     """
 
     # TODO This is a 2D example
-    mask = np.zeros_like(x.value)
+    mask = ops.zeros(x.shape, dtype=np.float64)
+
     if axis == 0:
-        output = x.value[index,
-                            np.arange(x.shape[1])].reshape((1, x.shape[1]))
-        mask[index, np.arange(x.shape[1])] = 1
-    elif axis == 1:
-        output = x.value[np.arange(x.shape[0]), index].reshape((x.shape[0], 1))
-        mask[np.arange(x.shape[0]), index] = 1
-        # print(index)
+        x_index = (index.value, np.arange(x.shape[1]))
+        shape = (1, x.shape[1])
+    else:
+        x_index = (np.arange(x.shape[0]), index.value)
+        shape = (x.shape[0], 1)
+
+    output = x.value[x_index].reshape(shape)
+    mask.value[x_index] = 1
 
     output = Variable(output, lchild=x)
-    output.slice_grad_parser = {"mask": mask}
+    output.slice_grad_parser = {"mask": mask,
+                                'axis': axis}
     output.back_prop = back_slice
     return output
 
 
 def back_slice(x: Variable):
-    x.lchild.update_gradient(ops.multiply(x.slice_grad_parser['mask'], x.gradient))
+    mask = x.slice_grad_parser['mask']
+    axis = x.slice_grad_parser['axis']
+    x.lchild.update_gradient(ops.multiply(mask, repeat(x.gradient, mask.shape[axis], axis)))
 
 
 def repeat(x, repeat_number, axis):

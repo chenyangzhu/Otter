@@ -188,5 +188,5 @@ class Flatten(common.Layer):
 
     def forward(self, X: Variable):
         self.n, self.c, self.x, self.y = X.shape
-        output = X.reshape((self.n, self.c * self.x * self.y))
+        output = ops.reshape(X, (self.n, self.c * self.x * self.y))
         return output

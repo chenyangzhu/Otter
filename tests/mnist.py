@@ -46,6 +46,9 @@ if __name__ == "__main__":
 
     (x_train, y_train), (x_test, y_test) = read_data()
 
+    x_train = x_train[:1000]
+    y_train = y_train[:1000]
+
     x_train, _, y_train, _ = sklearn.model_selection.train_test_split(x_train, y_train, test_size=0.33, random_state=2019)
 
     avg = np.average(x_train)
@@ -61,16 +64,16 @@ if __name__ == "__main__":
     conv1 = Conv2D(out_channel=8,
                    kernel_size=(3, 3),
                    stride=(2, 2))
-
-    conv2 = Conv2D(out_channel=16,
-                   kernel_size=(3, 3),
-                   stride=(2, 2))
+    #
+    # conv2 = Conv2D(out_channel=16,
+    #                kernel_size=(3, 3),
+    #                stride=(2, 2))
 
     flatten = Flatten()
-    dense1 = Dense(output_shape=128)
+    # dense1 = Dense(output_shape=128)
     dense2 = Dense(output_shape=10)
 
-    optimizer = GradientDescent(0.08)
+    optimizer = GradientDescent(1e-3)
 
     loss_list = []
     acc_list = []
@@ -79,7 +82,7 @@ if __name__ == "__main__":
     g = Graph()
 
     iteration = 1000
-    batch_size = 1024
+    batch_size = 32
     total_epoch = int(n / batch_size)
 
     for it_idx in range(iteration):
@@ -92,18 +95,19 @@ if __name__ == "__main__":
             x = Variable(x)
             y = Variable(y)
 
-            a = relu(conv1.forward(x))
-            b = relu(conv2.forward(a))
-            c = flatten.forward(b)
-            d = relu(dense1.forward(c))
-            f = dense2.forward(d)
+            a = relu(conv1(x))
+            # b = relu(conv2(a))
+            c = flatten(a)
+            # d = relu(dense1(c))
+            f = softmax(dense2(c))
 
-            loss = sparse_categorical_crossentropy_with_softmax(y, f)
+            loss = sparse_categorical_crossentropy(y, f)
             acc = sparse_categorical_accuracy(y, f)
 
-            # optimizer.learning_rate *= 0.99
+            g.back_propagate_with_optimizer(loss, optimizer)
 
-            g.update_gradient_with_optimizer(loss, optimizer)
+            print(c.gradient)
+
             loss_list.append(loss.value)
 
             print(f" acc:{acc}, loss:{loss.value}")

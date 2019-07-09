@@ -6,12 +6,10 @@ import otter as ot
 
 
 def conv2d(input, filter, strides, padding, data_format='NHWC'):
-
     pass
 
 
-def sparse_dot_with_mapping(x, w, mapping,
-                            sparse_matrix_height, sparse_matrix_width):
+def sparse_dot_with_mapping(x, w, mapping, sparse_matrix_height, sparse_matrix_width):
     """
     This function calculates a sparse matrix multiplication of xw
 
@@ -23,7 +21,7 @@ def sparse_dot_with_mapping(x, w, mapping,
                 containing the index for [(w), (fake sparse matrix)]
     """
 
-    output = ot.zeros(shape=(x.shape[0], sparse_matrix_width), dtype=np.float32)
+    output = ot.zeros(shape=(x.shape[0], sparse_matrix_width), dtype=np.float64)
     output.rchild = w
     output.lchild = x
     output.back_prop = back_sparse_dot_with_mapping
@@ -31,7 +29,6 @@ def sparse_dot_with_mapping(x, w, mapping,
     for each_mapping in mapping:
         index_in_w = each_mapping[0]
         i, j = each_mapping[1]
-
         output.value[:, j] += x.value[:, i] * w.value[index_in_w]
 
     output.sparse_dot_with_mapping_grad_parser = {'mapping': mapping}
@@ -49,15 +46,14 @@ def back_sparse_dot_with_mapping(x: Variable):
 
     mapping = x.sparse_dot_with_mapping_grad_parser['mapping']
 
-    x.rchild.gradient = np.zeros_like(x.rchild.gradient)
-    x.lchild.gradient = np.zeros_like(x.lchild.gradient)
+    rchild_gradient = ot.zeros(x.rchild.shape, dtype=np.float64)
+    lchild_gradient = ot.zeros(x.lchild.shape, dtype=np.float64)
 
     for each_mapping in mapping:
         index_in_w = each_mapping[0]
         i, j = each_mapping[1]
-        x.rchild.gradient[index_in_w] += np.sum(x.lchild.value[:, i] * x.gradient.value[:, j])
-        x.lchild.gradient[:, i] += x.rchild.value[index_in_w] * x.gradient.value[:, j]
+        rchild_gradient.value[index_in_w] += np.sum(x.lchild.value[:, i] * x.gradient.value[:, j])
+        lchild_gradient.value[:, i] += x.rchild.value[index_in_w] * x.gradient.value[:, j]
 
-    x.rchild.gradient = Variable(x.rchild.gradient)
-    x.lchild.gradient = Variable(x.lchild.gradient)
-
+    x.rchild.update_gradient(rchild_gradient)
+    x.lchild.update_gradient(lchild_gradient)

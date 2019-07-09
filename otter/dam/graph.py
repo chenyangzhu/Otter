@@ -4,6 +4,7 @@ from otter.optimizer import Optimizer
 from otter._hyperparam import *
 import otter.ops as ops
 
+
 class Graph:
     def __init__(self):
         pass
@@ -14,31 +15,27 @@ class Graph:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def update_gradient_with_optimizer(self, x: Variable, optimizer: Optimizer):
-        # print(type(x))
+    def back_propagate_with_optimizer(self, x: Variable, optimizer: Optimizer):
 
-        # Gradient Clipping
-        mask = (x.gradient.value < GRADIENT_CLIPPING_THRESHOLD).astype(int)
-        mask = np.multiply(mask, (x.gradient.value > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
-        mask = Variable(mask)
-        contra_mask = Variable(np.array(1)) - mask
-        x.gradient = ops.multiply(mask, x.gradient) + ops.dot(contra_mask, Variable(np.array(GRADIENT_CLIPPING_THRESHOLD)))
+        if x is not None:
+            # print(type(x))
 
-        if x.back_prop is not None:
-            # which means x is an input node
-            x.back_prop(x)
+            # Gradient Clipping
+            mask = (x.gradient.value < GRADIENT_CLIPPING_THRESHOLD).astype(int)
+            mask = np.multiply(mask, (x.gradient.value > -GRADIENT_CLIPPING_THRESHOLD).astype(int))
+            mask = Variable(mask)
+            contra_mask = Variable(np.array(1)) - mask
+            x.gradient = ops.multiply(mask, x.gradient) + ops.dot(contra_mask, ops.constant(GRADIENT_CLIPPING_THRESHOLD))
 
-        if x.trainable:
-            optimizer.update_once(x)
+            if x.back_prop is not None:
+                # which means x is an input node
+                x.back_prop(x)
 
-        if x.lchild is not None:
-            self.update_gradient_with_optimizer(x.lchild, optimizer)
+            if x.trainable:
+                optimizer.update_once(x)
 
-        if x.rchild is not None:
-            self.update_gradient_with_optimizer(x.rchild, optimizer)
-
-        # After updating the children's gradient
-        # We update the value if trainable
+            self.back_propagate_with_optimizer(x.lchild, optimizer)
+            self.back_propagate_with_optimizer(x.rchild, optimizer)
 
     def update_gradient(self, x: Variable):
         if x.back_prop is not None:

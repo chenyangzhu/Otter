@@ -27,8 +27,8 @@ def last_dim_one_hot(x, vocab_size):
     reshaped_one_hot = one_hot.reshape(np.prod(shape[:-1]), vocab_size)
     reshaped_one_hot[np.arange(np.prod(shape[:-1])), np.array(reshaped_x).T[0]] = 1
     reshape_back = reshaped_one_hot.reshape(shape)
-
     return reshape_back
+
 
 def l2norm(x):
     return np.sum(x ** 2)

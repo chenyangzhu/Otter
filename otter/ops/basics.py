@@ -7,10 +7,6 @@ import numpy as np
 """
 Self Calculations
 """
-
-# __all__ = ['inv', 'back_inv']
-
-
 def inv(x: Variable):
     output = Variable(1 / x.value, lchild=x)
     output.back_prop = back_inv
@@ -91,6 +87,8 @@ def back_dot(x: Variable):
 
 
 def multiply(x: Variable, y: Variable):
+    assert isinstance(x, Variable)
+    assert isinstance(y, Variable)
     assert x.shape == y.shape
 
     output = Variable(np.multiply(x.value, y.value), lchild=x, rchild=y)
@@ -108,10 +106,12 @@ def __pow__(x: Variable, power: Variable):
     output.back_prop = back_pow
     return output
 
+
 def pow(x: Variable, power: Variable):
     output = Variable(x.value ** power.value, lchild=x, rchild=power)
     output.back_prop = back_pow
     return output
+
 
 def back_pow(x: Variable):
     # TODO add right child gradient
@@ -124,7 +124,10 @@ More advanced self calculation
 
 
 def maximum(x: Variable, axis=None):
-    mask = Variable(np.zeros(x.value.shape))
+    print(x.shape)
+
+    mask = Variable(np.zeros(x.shape))
+
     if axis is not None:
         max_idx = np.argmax(x.value, axis=axis)
 
@@ -133,9 +136,10 @@ def maximum(x: Variable, axis=None):
             mask.value[np.arange(mask.shape[0]), max_idx] = 1
         elif axis == 0:
             mask.value[max_idx, np.arange(mask.shape[1])] = 1
-
     else:
+        print(x.value)
         max_idx = np.argmax(x.value)
+        print(max_idx)
         mask.value[max_idx] = 1
 
     output = multiply(x, mask)

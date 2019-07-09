@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
         print("Forward Done.")
         for each in output:
-            g.update_gradient_with_optimizer(each, optimizer)
+            g.back_propagate_with_optimizer(each, optimizer)
         print("Backward Done")
 
 

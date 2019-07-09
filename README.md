@@ -43,7 +43,7 @@ with Graph() as g:
         b = layer2.forward(a)
         c = loss(y, b)
 
-        g.update_gradient_with_optimizer(c, optimizer)
+        g.back_propagate_with_optimizer(c, optimizer)
 ```
 
 ### Ways to prevent vanishing/exploding gradients
@@ -60,5 +60,8 @@ with Graph() as g:
 - Optimizer: GD, SGD, Adam, RMSprop
 
 
-### TODO
-- change softmax function
+## Speed Comparison with pytorch
+
+| Network | n=1        | n=10,000         | n=60,000  |
+|---------| ------------- |-------------| -----|
+|1-layer CNN(Mnist)| | | |

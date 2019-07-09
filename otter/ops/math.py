@@ -22,18 +22,13 @@ def back_exp(x: Variable):
 
 def log(x: Variable) -> Variable:
     output = Variable(np.log(x.value), lchild=x)
-    inverse = 1 / x.value
-
-    output.log_grad_parser = {"inverse": inverse}
     output.back_prop = back_log
     return output
 
 
 def safe_log(x: Variable):
-    return log((x + Variable(EPSILON)))
+    return log((x + ops.constant(EPSILON)))
 
 
 def back_log(x):
-    x.lchild.update_gradient(ops.multiply(x.log_grad_parser['inverse'],
-                                          x.gradient))
-
+    x.lchild.update_gradient(ops.multiply(ops.safe_inv(x), x.gradient))

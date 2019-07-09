@@ -20,7 +20,7 @@ def sigmoid(x: Variable):
 
 
 def softmax(x: Variable, axis=1):
-    M = ops.maximum(x).copy()  # M must only be a constant
+    M = ops.average(x).copy()  # M must only be a constant
     small_x = x - M
     exp_small_x = ops.safe_exp(small_x)
     inv_sum_exp_small_x = ops.safe_inv(ops.sum(exp_small_x, axis=axis))

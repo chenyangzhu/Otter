@@ -43,7 +43,7 @@ with Graph() as g:
         b = layer2.forward(a)
         c = loss(y, b)
 
-        g.update_gradient_with_optimizer(c, optimizer)
+        g.back_propagate_with_optimizer(c, optimizer)
 ```
 
 ### Ways to prevent vanishing/exploding gradients

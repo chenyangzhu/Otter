@@ -11,7 +11,7 @@ class Dtype:
         pass
 
 class float64:
-
     def __init__(self):
         super().__init__()
+
 

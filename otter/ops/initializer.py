@@ -13,3 +13,6 @@ def zeros(shape, dtype, lchild=None, rchild=None):
 def normal(mu, sigma, shape, lchild=None, rchild=None):
     return Variable(np.random.normal(mu, sigma, shape), lchild=lchild, rchild=rchild)
 
+
+def constant(value):
+    return Variable(np.array(value))

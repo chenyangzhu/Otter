@@ -10,6 +10,9 @@ class Layer():
     def forward(self, x):
         pass
 
+    def __call__(self, x, *args, **kwargs):
+        return self.forward(x)
+
     def predict(self, x):
         return self.forward(x)
 

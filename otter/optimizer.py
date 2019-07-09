@@ -6,6 +6,7 @@ Further generalize the model into capability of coping with different w's and b'
 import numpy as np
 from otter.dam.structure import Variable
 import otter as ot
+import otter.ops as ops
 
 __all__ = ["GradientDescent", "StochasticGradientDescent",
            "RMSProp", "Adam"]
@@ -31,7 +32,7 @@ class Optimizer:
         if method == 'full':
             # axis = 1, col-wise average, for param share b
             # axis = 0, row-wise average, for normal gradients
-            n_grad = np.average(grad, axis=0)
+            n_grad = ot.average(grad, axis=0).copy()
 
         elif method == 'stochastic':
             n_grad = grad[:, np.random.randint(0, n, 1)]
@@ -51,7 +52,7 @@ class Optimizer:
 class GradientDescent(Optimizer):
     def __init__(self, learning_rate, mini_batch=-1):
         super().__init__()
-        self.learning_rate = Variable(np.array(learning_rate))
+        self.learning_rate = ot.constant(learning_rate)
         self.mini_batch = mini_batch
 
     def update_once(self, x: Variable):
