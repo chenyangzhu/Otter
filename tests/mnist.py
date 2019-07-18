@@ -70,7 +70,7 @@ if __name__ == "__main__":
     dense1 = Dense(output_shape=128)
     dense2 = Dense(output_shape=10)
 
-    optimizer = GradientDescent(0.08)
+    optimizer = GradientDescent(1e-4)
 
     loss_list = []
     acc_list = []
